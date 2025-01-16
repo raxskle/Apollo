@@ -1,0 +1,51 @@
+.select-btn-container,
+.select-btn-container-content-type,
+.select-btn-container-text-color,
+.select-btn-container-text-bg-color {
+  .select-btn-menu {
+    padding: 4px 4px;
+    .select-btn-menu-content-title {
+      font-size: 13px;
+      margin: 4px;
+      color: rgb(94, 94, 94);
+    }
+  }
+
+  .select-btn-menu-content-type {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .select-btn-menu-item {
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      text-wrap: none;
+      flex-wrap: nowrap;
+      padding: 6px 26px;
+      border-radius: 4px;
+      font-size: 14px;
+      width: auto;
+      text-align: center;
+      white-space: nowrap;
+      // box-sizing: border-box;
+
+      &:hover {
+        background-color: rgb(230, 230, 230);
+      }
+    }
+  }
+  .select-btn-menu-text-color,
+  .select-btn-menu-text-bg-color {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    // 颜色选择器组件
+    .sketch-picker {
+      box-shadow: none !important;
+      background-color: transparent !important;
+      padding: 4px 10px !important;
+    }
+  }
+}

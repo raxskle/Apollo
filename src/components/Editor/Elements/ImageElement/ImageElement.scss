@@ -1,0 +1,224 @@
+.image-element {
+  display: flex;
+  flex-direction: row;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+
+  .image-element-hide-children {
+    display: none;
+  }
+
+  .upload-image-btn {
+    background-color: rgb(240, 240, 240);
+    color: rgb(95, 95, 95);
+    height: 80px;
+    width: 400px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    cursor: pointer;
+    box-sizing: border-box;
+    user-select: none;
+
+    &.forbidden {
+      cursor: default;
+    }
+
+    &:hover {
+      background-color: rgb(230, 230, 230);
+    }
+
+    &:active {
+      background-color: rgb(220, 220, 220);
+    }
+  }
+
+  .image-element-container {
+    max-width: 100%;
+    max-height: 100%;
+    position: relative;
+    padding: 0px;
+    margin: 0px;
+    display: flex;
+    transition: all 0.2s ease;
+
+    &::before {
+      content: "";
+      transition: all 0.2s;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      background-color: transparent; // 透明蒙层
+      z-index: 1; // 确保蒙层在内容之上
+    }
+
+    .image-resize-bar-left,
+    .image-resize-bar-right {
+      visibility: hidden;
+      transition: all 0.5s ease;
+      opacity: 0;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 48px;
+      width: 6px;
+      cursor: col-resize;
+      border-radius: 4px;
+      z-index: 2;
+      background-color: rgba(0, 0, 0, 0.4);
+      border: 1px solid white;
+    }
+    .image-resize-bar-left {
+      left: 4px;
+    }
+    .image-resize-bar-right {
+      right: 4px;
+    }
+
+    &:hover {
+      .image-resize-bar-left,
+      .image-resize-bar-right,
+      .image-tooltip-bar {
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+
+    &:focus-within {
+      &::before {
+        background-color: rgba(0, 153, 255, 0.2); // 蓝色半透明蒙层
+      }
+
+      .image-tooltip-bar {
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+
+    .image-element-content {
+      max-width: 100%;
+      max-height: 100%;
+      position: relative;
+      border-radius: 2px;
+      padding: 0px;
+      margin: 0px;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .image-tooltip-bar {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      z-index: 10;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      background-color: rgba(0, 0, 0, 0.5);
+
+      .align-btn {
+        position: relative;
+        // border-radius: 4px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        > svg path {
+          stroke: rgba(200, 200, 200, 0.8);
+          transition: all 0.2s ease;
+        }
+
+        .expand {
+          > path {
+            fill: rgba(200, 200, 200, 0.8);
+          }
+        }
+
+        .trash {
+          > path {
+            fill: rgba(200, 200, 200, 0.8);
+          }
+        }
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.3);
+          > svg path {
+            stroke: white;
+          }
+          .expand {
+            > path {
+              fill: white;
+            }
+          }
+          .trash {
+            > path {
+              fill: white;
+            }
+          }
+        }
+
+        .align-menu {
+          visibility: hidden;
+          opacity: 0;
+          position: absolute;
+          transition: all 0.2s ease;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          flex-direction: row;
+          border-radius: 4px;
+        }
+
+        &:focus {
+          outline: none;
+          .align-menu {
+            visibility: visible;
+            opacity: 1;
+          }
+        }
+      }
+
+      .align-btn.active {
+        > svg path {
+          stroke: white;
+        }
+      }
+
+      .align-btn + .align-btn {
+        &::before {
+          content: "";
+          transition: all 0.2s ease;
+          height: 100%;
+          width: 0.5px;
+          position: absolute;
+          left: 0px;
+          background-color: rgba(200, 200, 200, 0.8);
+        }
+      }
+
+      .align-btn:first-child {
+        border-radius: 4px 0px 0px 4px;
+      }
+      .align-btn:last-child {
+        border-radius: 0px 4px 4px 0px;
+      }
+    }
+  }
+}

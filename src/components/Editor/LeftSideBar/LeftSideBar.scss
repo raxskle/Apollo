@@ -1,0 +1,97 @@
+.left-sidebar-container {
+  min-height: 50vh;
+  width: 40px;
+  position: absolute;
+  top: 60px;
+  left: 0px;
+
+  z-index: 200;
+
+  .left-sidebar {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    margin: 0px;
+    padding: 0px;
+    padding-left: 16px;
+    padding-top: 20vh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    max-height: 80vh;
+
+    .catalogue-item-heading-one,
+    .catalogue-item-heading-two,
+    .catalogue-item-heading-three {
+      margin: 5px 0px;
+      padding: 0px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      z-index: 200;
+      background-color: rgb(174, 174, 174);
+      height: 2px;
+    }
+
+    .catalogue-item-heading-one {
+      width: 20px;
+    }
+
+    .catalogue-item-heading-two {
+      width: 15px;
+    }
+
+    .catalogue-item-heading-three {
+      width: 10px;
+    }
+
+    .detail-bar {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      left: 16px;
+      top: 18vh;
+      width: 280px;
+      max-height: 60vh;
+      overflow-y: auto;
+      background-color: white;
+      z-index: 300;
+      border-radius: 4px;
+      padding: 16px 8px;
+      box-sizing: border-box;
+
+      transition: all 0.2s ease-in-out;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      transform: translateX(-16px);
+    }
+    &:hover {
+      .detail-bar {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(0px);
+      }
+    }
+
+    .detail-item {
+      font-size: 14px;
+      color: rgb(126, 126, 126);
+      padding: 4px;
+      border-radius: 4px;
+      text-wrap: wrap;
+      word-break: break-all;
+      max-lines: 2;
+      line-clamp: 2;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      display: -webkit-box;
+      text-overflow: ellipsis;
+      overflow: hidden; // 隐藏超出部分
+
+      &:hover {
+        color: rgb(30, 30, 30);
+        background-color: rgba(144, 144, 144, 0.4);
+      }
+    }
+  }
+}
