@@ -143,12 +143,16 @@ export function EditorContent() {
         );
       }
     );
+
+    // 初始化文档
     client.socketAdaptor.resigterAction<Document>("initialDocument", (res) => {
       dispatch(
         initDocument({
           document: res,
         })
       );
+      // client.setRevision(res.version); // Client的版本
+      console.log("init document", res);
       Transforms.insertNodes(editor, res.content);
     });
 
@@ -162,8 +166,7 @@ export function EditorContent() {
       }
 
       console.log("slate change>>>>>>>>>>>operation", options.operation);
-      client.applyClient(new Operation([options.operation]));
-      // console.log("slate change>>>>>>>>>>>>>editor", editor);
+      client.applyClient(new Operation([options.operation], client.revision));
     };
 
     return () => {
@@ -175,38 +178,42 @@ export function EditorContent() {
 
   return (
     <div className="editor-content">
-      <LeftSideBar />
-      <Slate
-        editor={editor}
-        initialValue={document.content}
-        onChange={(value) => {
-          dispatch(changeDocumentContent({ content: value }));
-        }}
-      >
-        <HoveringToolbar />
-        <Editable
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          onKeyDown={(event) => {
-            if (!event.ctrlKey) {
-              return;
-            }
-            switch (event.key) {
-              case "`": {
-                event.preventDefault();
-                CustomEditor.toggleCodeBlock(editor);
-                break;
-              }
+      {document.content.length > 0 && (
+        <>
+          <LeftSideBar />
+          <Slate
+            editor={editor}
+            initialValue={document.content}
+            onChange={(value) => {
+              dispatch(changeDocumentContent({ content: value }));
+            }}
+          >
+            <HoveringToolbar />
+            <Editable
+              renderElement={renderElement}
+              renderLeaf={renderLeaf}
+              onKeyDown={(event) => {
+                if (!event.ctrlKey) {
+                  return;
+                }
+                switch (event.key) {
+                  case "`": {
+                    event.preventDefault();
+                    CustomEditor.toggleCodeBlock(editor);
+                    break;
+                  }
 
-              case "b": {
-                event.preventDefault();
-                CustomEditor.toggleBoldMark(editor);
-                break;
-              }
-            }
-          }}
-        />
-      </Slate>
+                  case "b": {
+                    event.preventDefault();
+                    CustomEditor.toggleBoldMark(editor);
+                    break;
+                  }
+                }
+              }}
+            />
+          </Slate>
+        </>
+      )}
     </div>
   );
 }

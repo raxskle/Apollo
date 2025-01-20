@@ -15,6 +15,7 @@ export type Document = {
   lastModified: number;
   createdTime: number;
   comments: Comment[];
+  version: number; // 文档的版本号
 };
 
 type User = {
@@ -39,7 +40,7 @@ type SystemState = {
   collaborator: Collaborator[];
 };
 
-const initialContent: CustomElement[] | Descendant[] = [
+export const initialContent: CustomElement[] | Descendant[] = [
   {
     type: "heading-one",
     level: 1,
@@ -101,24 +102,16 @@ const initialContent: CustomElement[] | Descendant[] = [
   },
 ];
 
-export const initialDocument = {
-  id: "0001",
-  title: "文档1",
-  content: initialContent,
-  lastModified: 1736776606249,
-  createdTime: 1736776400000,
-  comments: [],
-};
-
 const initialState: SystemState = {
   // 初始状态
   document: {
-    id: "0001",
-    title: "文档0",
+    id: "0000",
+    title: " ",
     content: [],
-    lastModified: 1736776606249,
-    createdTime: 1736776400000,
+    lastModified: 0,
+    createdTime: 0,
     comments: [],
+    version: 0,
   },
   user: {
     id: "abc",

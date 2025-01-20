@@ -2,7 +2,23 @@
 
 import { Socket } from "socket.io";
 import { getRandomColor } from "../../src/utils";
-import { Document, initialDocument } from "../../src/store/reducers";
+import { Document, initialContent } from "../../src/store/reducers";
+import { Operation } from "../../src/lib/ot";
+import { Editor, createEditor } from "slate";
+import { withHistory } from "slate-history";
+import { JSDOM } from "jsdom";
+
+const serverStartTime = Date.now();
+
+const initialDocument = {
+  id: "0001",
+  title: "文档1",
+  content: initialContent,
+  lastModified: serverStartTime,
+  createdTime: serverStartTime,
+  comments: [],
+  version: 1,
+};
 
 export class OTClient {
   socketId: string;
@@ -15,14 +31,21 @@ export class OTClient {
   }
 }
 
+const dom = new JSDOM();
+global.document = dom.window.document;
+global.window = dom.window as unknown as Window & typeof globalThis;
+
 export class OTServer {
   clients: Map<string, OTClient>; // 在线的客户端
-  lastEditTime: number; // 最后编辑时间
-  document: Document;
+  document: Document; // 当前文档
+  operations: Operation[]; // 记录操作栈
+  slate: Editor; // slate示例，用于服务端应用op保持文档同步
   constructor() {
     this.clients = new Map();
-    this.lastEditTime = 0;
     this.document = initialDocument;
+    this.operations = [];
+    this.slate = withHistory(createEditor());
+    this.slate.children = this.document.content;
   }
   clientConnect(socket: Socket) {
     this.clients.set(socket.id, new OTClient(socket.id));
@@ -32,5 +55,23 @@ export class OTServer {
   }
   getClients() {
     return Array.from(this.clients);
+  }
+  // 接受文档内容op
+  receiveOperation(operation: Operation) {
+    // todo：transform op
+
+    // 记录操作栈
+    this.operations.push(operation);
+    // 逐个执行op
+    operation.actions.forEach((action, index) => {
+      console.log(">>>>执行action", index, action);
+      this.slate.apply(action);
+    });
+    // 更新文档内容
+    this.document.content = this.slate.children;
+    this.document.lastModified = Date.now();
+    this.document.version = operation.targetVersion;
+
+    console.log(">>>>apply slate结果", this.slate.children);
   }
 }

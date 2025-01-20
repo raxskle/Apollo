@@ -15,7 +15,7 @@ export class Client {
 
   constructor() {
     this.state = new Synchronized();
-    this.revision = 1;
+    this.revision = 0;
     this.socketAdaptor = new SocketAdaptor();
     this.socketAdaptor.resigterAction<Operation>(
       "applyServer",
@@ -40,8 +40,17 @@ export class Client {
   setState(state: Synchronized | AwaitingConfirm | AwaitingWithBuffer) {
     this.state = state;
   }
+  setRevision(revision: number) {
+    this.revision = revision;
+  }
 
   applyClient(operation: Operation) {
+    this.setRevision(this.revision + 1);
+    if (this.revision <= 1) {
+      console.log("Client.applyClient --- init document");
+      return;
+    }
+
     console.log("client.applyClient>>>>>>>before", this.state);
     this.setState(this.state.applyClient(this, operation));
     console.log("client.applyClient<<<<<<<after", this.state);

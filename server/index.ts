@@ -29,6 +29,7 @@ io.on("connection", (socket) => {
   socket.on("opFormClient", (msg) => {
     console.log("opFormClient", msg);
     // todo：transform，存储
+    otServer.receiveOperation(msg);
     // 发送给其他客户端应用
     socket.broadcast.emit("applyServer", msg);
     // 回复ack
