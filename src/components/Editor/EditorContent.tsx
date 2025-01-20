@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo } from "react";
 import "./EditorContent.scss";
-
+import { OTClient } from "../../../server/ot/index";
 import {
   createEditor,
   Text,
   Editor,
   Transforms,
   Element as SlateElement,
+  Operation as SlateOperation,
 } from "slate";
 import {
   Slate,
@@ -22,7 +23,14 @@ import { LeftSideBar } from "./LeftSideBar/LeftSideBar";
 import { ElementWithAddBar } from "./ElementWithAddBar/ElementWithAddBar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
-import { changeDocumentContent } from "../../store/reducers";
+import {
+  updateCollaborators,
+  changeDocumentContent,
+  Collaborator,
+  Document,
+  initDocument,
+} from "../../store/reducers";
+import { Client, Operation } from "../../lib/ot";
 
 // 文本leaf样式
 const Leaf = (props: RenderLeafProps) => {
@@ -57,7 +65,7 @@ const Leaf = (props: RenderLeafProps) => {
   );
 };
 
-// 命令处理逻辑
+// 封装处理编辑器修改的逻辑
 const CustomEditor = {
   isBoldMarkActive(editor: CustomEditorType) {
     const [match] = Editor.nodes(editor, {
@@ -113,16 +121,57 @@ export function EditorContent() {
   // const [operations, setOperations] = useState<>([]);
 
   useEffect(() => {
+    const client = new Client();
+    client.socketAdaptor.resigterAction<{ data: [string, OTClient][] }>(
+      "updateUserCount",
+      (res) => {
+        const userList = res.data;
+        console.log("???updateUserCount", userList);
+        // 更新user
+
+        dispatch(
+          updateCollaborators({
+            collaborators: userList.map((item) => {
+              const [socketId, user] = item;
+              return new Collaborator(
+                socketId,
+                user.userName,
+                user.displayColor
+              );
+            }),
+          })
+        );
+      }
+    );
+    client.socketAdaptor.resigterAction<Document>("initialDocument", (res) => {
+      dispatch(
+        initDocument({
+          document: res,
+        })
+      );
+      Transforms.insertNodes(editor, res.content);
+    });
+
     // 监听editor的变化
     const rawOnChange = editor.onChange;
-    editor.onChange = (options) => {
+    editor.onChange = (options?: { operation?: SlateOperation }) => {
       rawOnChange.call(editor, options);
+      if (!options || !options?.operation) {
+        console.error("slate change>>>>>>>>>>>>>operation is undefined");
+        return;
+      }
 
-      console.log(options);
-      console.log(editor.operations);
-      console.log(editor.history);
+      console.log("slate change>>>>>>>>>>>operation", options.operation);
+      client.applyClient(new Operation([options.operation]));
+      // console.log("slate change>>>>>>>>>>>>>editor", editor);
     };
-  }, [editor]);
+
+    return () => {
+      client.destroy();
+      // 取消监听
+      editor.onChange = rawOnChange;
+    };
+  }, [editor, dispatch]);
 
   return (
     <div className="editor-content">

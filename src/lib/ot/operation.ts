@@ -1,19 +1,26 @@
+import { Operation as SlateOperation } from "slate";
+
 export class Operation {
-  data: OperationData;
-  constructor(data: OperationData) {
-    this.data = data;
+  actions: SlateAction[];
+  constructor(data: SlateAction[]) {
+    this.actions = data;
   }
+  static formData(data: Operation): Operation {
+    return new Operation(data.actions);
+  }
+
+  // operation是action数组，因为经过了操作堆积时compose
   transform(other: Operation): Array<Operation> {
     // transform转换
     // case by case
     return [other, other];
   }
-  compose(buffer: Operation): Operation {
+
+  compose(operation: Operation): Operation {
     // 新的buffer和原本buffer合并
-    return buffer;
+    this.actions = [...this.actions, ...operation.actions];
+    return this;
   }
 }
 
-export type OperationData = {
-  [key: string]: unknown;
-};
+type SlateAction = SlateOperation;

@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getRandomColor } from "../utils";
 import { AlignType, CustomElement } from "../types/editor";
 import { Descendant } from "slate";
 
@@ -9,7 +8,7 @@ type Comment = {
   user: User;
 };
 
-type Document = {
+export type Document = {
   id: string;
   title: string;
   content: CustomElement[] | Descendant[];
@@ -23,11 +22,16 @@ type User = {
   name: string;
 };
 
-type Collaborator = {
+export class Collaborator {
   id: string;
   name: string;
   displayColor: string;
-};
+  constructor(id: string, name: string, displayColor: string) {
+    this.id = id;
+    this.name = name;
+    this.displayColor = displayColor;
+  }
+}
 
 type SystemState = {
   document: Document;
@@ -97,12 +101,21 @@ const initialContent: CustomElement[] | Descendant[] = [
   },
 ];
 
+export const initialDocument = {
+  id: "0001",
+  title: "文档1",
+  content: initialContent,
+  lastModified: 1736776606249,
+  createdTime: 1736776400000,
+  comments: [],
+};
+
 const initialState: SystemState = {
   // 初始状态
   document: {
     id: "0001",
-    title: "文档1",
-    content: initialContent,
+    title: "文档0",
+    content: [],
     lastModified: 1736776606249,
     createdTime: 1736776400000,
     comments: [],
@@ -111,49 +124,16 @@ const initialState: SystemState = {
     id: "abc",
     name: "Raxskle",
   },
-  collaborator: [
-    {
-      id: "abc",
-      name: "abc",
-      displayColor: getRandomColor(),
-    },
-    {
-      id: "def",
-      name: "def",
-      displayColor: getRandomColor(),
-    },
-    {
-      id: "ghi",
-      name: "ghi",
-      displayColor: getRandomColor(),
-    },
-    {
-      id: "jkl",
-      name: "jkl",
-      displayColor: getRandomColor(),
-    },
-    {
-      id: "mno",
-      name: "mno",
-      displayColor: getRandomColor(),
-    },
-    {
-      id: "pqr",
-      name: "pqr",
-      displayColor: getRandomColor(),
-    },
-    {
-      id: "stu",
-      name: "stu",
-      displayColor: getRandomColor(),
-    },
-  ],
+  collaborator: [],
 };
 
 const rootSlice = createSlice({
   name: "root",
   initialState,
   reducers: {
+    initDocument: (state, action: PayloadAction<{ document: Document }>) => {
+      state.document = action.payload.document;
+    },
     changeDocumentTitle: (state, action: PayloadAction<{ title: string }>) => {
       state.document.title = action.payload.title;
     },
@@ -163,15 +143,22 @@ const rootSlice = createSlice({
     ) => {
       state.document.content = action.payload.content;
     },
-    addCollaborator: (
+    updateCollaborators: (
       state,
-      action: PayloadAction<{ collaborator: Collaborator }>
+      action: PayloadAction<{
+        collaborators: Collaborator[];
+      }>
     ) => {
-      state.collaborator.push(action.payload.collaborator);
+      state.collaborator = action.payload.collaborators;
     },
   },
 });
 
-export const { changeDocumentTitle, changeDocumentContent } = rootSlice.actions;
+export const {
+  initDocument,
+  changeDocumentTitle,
+  changeDocumentContent,
+  updateCollaborators,
+} = rootSlice.actions;
 export default rootSlice.reducer;
 export type RootState = ReturnType<typeof rootSlice.reducer>;

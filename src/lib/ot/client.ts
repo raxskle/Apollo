@@ -4,7 +4,7 @@ import {
   Synchronized,
 } from "./client-state";
 import { EditorAdaptor } from "./editor-adaptor";
-import { Operation, OperationData } from "./operation";
+import { Operation } from "./operation";
 import { SocketAdaptor } from "./socket-adaptor";
 
 export class Client {
@@ -17,11 +17,17 @@ export class Client {
     this.state = new Synchronized();
     this.revision = 1;
     this.socketAdaptor = new SocketAdaptor();
-    this.socketAdaptor.resigterAction<OperationData>("applyServer", (data) => {
-      // 需要用箭头函数包裹，否则this会指向socketAdaptor
-      // 当收到服务端op时，将data转换为Operation
-      const operation = new Operation(data);
-      this.applyServer(operation);
+    this.socketAdaptor.resigterAction<Operation>(
+      "applyServer",
+      (operationData: Operation) => {
+        // 需要用箭头函数包裹，否则this会指向socketAdaptor
+        // 当收到服务端op时，将data转换为Operation
+        const operation = Operation.formData(operationData);
+        this.applyServer(operation);
+      }
+    );
+    this.socketAdaptor.resigterAction<Operation>("serverAck", () => {
+      this.serverAck();
     });
     this.editorAdaptor = new EditorAdaptor();
   }
@@ -33,26 +39,30 @@ export class Client {
   }
   setState(state: Synchronized | AwaitingConfirm | AwaitingWithBuffer) {
     this.state = state;
-    console.log("SetState", this.state);
   }
 
   applyClient(operation: Operation) {
+    console.log("client.applyClient>>>>>>>before", this.state);
     this.setState(this.state.applyClient(this, operation));
+    console.log("client.applyClient<<<<<<<after", this.state);
   }
 
   serverAck() {
+    console.log("client.serverAck>>>>>>>before", this.state);
     this.setState(this.state.serverAck(this));
+    console.log("client.serverAck<<<<<<<after", this.state);
   }
 
   applyServer(operation: Operation) {
-    console.log("client.applyServer", this.state);
+    console.log("client.applyServer>>>>>>>before", this.state);
     this.setState(this.state.applyServer(this, operation));
+    console.log("client.applyServer<<<<<<<after", this.state);
   }
 
   sendOperation(operation: Operation) {
     // 发送op
     // 通过socketAdaptor将op通过socket.io发送到服务端
-    this.socketAdaptor.sendData("applyClient", operation);
+    this.socketAdaptor.sendData("opFormClient", operation);
   }
   applyOperation(operation: Operation) {
     // 应用op

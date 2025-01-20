@@ -1,31 +1,38 @@
 import Koa from "koa";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { OTServer } from "./ot";
 
 const app = new Koa();
 const httpServer = createServer(app.callback());
-const io = new Server(httpServer, {
+export const io = new Server(httpServer, {
   cors: {
     origin: "*",
   },
 });
 
+const otServer = new OTServer();
+
 io.on("connection", (socket) => {
   console.log("connection", socket.id);
-
-  socket.on("hello", (msg) => {
-    console.log("hello ", msg);
-  });
+  otServer.clientConnect(socket);
+  io.emit("updateUserCount", { data: otServer.getClients() });
+  io.emit("initialDocument", otServer.document);
 
   socket.on("disconnect", () => {
     console.log("disconnect", socket.id);
+    otServer.clientDisconnect(socket);
+    io.emit("updateUserCount", { data: otServer.getClients() });
   });
 
-  socket.on("applyClient", (msg) => {
-    console.log("applyClient", msg);
-    setTimeout(() => {
-      socket.emit("applyServer", msg);
-    }, 1000);
+  // 和Slate调用client的applyClient区分
+  socket.on("opFormClient", (msg) => {
+    console.log("opFormClient", msg);
+    // todo：transform，存储
+    // 发送给其他客户端应用
+    socket.broadcast.emit("applyServer", msg);
+    // 回复ack
+    socket.emit("serverAck", msg);
   });
 });
 
