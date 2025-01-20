@@ -56,7 +56,7 @@ export class AwaitingConfirm {
     //  to the client's
     //  current document)
 
-    const [outstanding1, op1] = operation.transform(this.outstanding);
+    const [op1, outstanding1] = operation.transform(this.outstanding);
     client.applyOperation(op1);
     return new AwaitingConfirm(outstanding1);
   }
@@ -108,8 +108,8 @@ export class AwaitingWithBuffer {
     //
     // * op1
 
-    const [outstanding1, op1] = operation.transform(this.outstanding);
-    const [buffer1, op2] = op1.transform(this.buffer);
+    const [op1, outstanding1] = operation.transform(this.outstanding);
+    const [op2, buffer1] = op1.transform(this.buffer);
     client.applyOperation(op2);
     return new AwaitingWithBuffer(outstanding1, buffer1);
   }

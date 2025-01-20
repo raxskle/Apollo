@@ -4,7 +4,7 @@ import { Socket } from "socket.io";
 import { getRandomColor } from "../../src/utils";
 import { Document, initialContent } from "../../src/store/reducers";
 import { Operation } from "../../src/lib/ot";
-import { Editor, createEditor } from "slate";
+import { Editor, createEditor, withoutNormalizing } from "slate";
 import { withHistory } from "slate-history";
 import { JSDOM } from "jsdom";
 
@@ -60,18 +60,23 @@ export class OTServer {
   receiveOperation(operation: Operation) {
     // todo：transform op
 
+    // 如果是撤销
+    if (operation.actions.length > 0 && operation.actions[0].undo) {
+      this.slate.undo();
+    } else {
+      // 逐个执行op
+      withoutNormalizing(this.slate, () => {
+        operation.actions.forEach((action, index) => {
+          console.log(">>>>执行action", index, action);
+          this.slate.apply(action);
+        });
+      });
+    }
     // 记录操作栈
     this.operations.push(operation);
-    // 逐个执行op
-    operation.actions.forEach((action, index) => {
-      console.log(">>>>执行action", index, action);
-      this.slate.apply(action);
-    });
     // 更新文档内容
     this.document.content = this.slate.children;
     this.document.lastModified = Date.now();
     this.document.version = operation.targetVersion;
-
-    console.log(">>>>apply slate结果", this.slate.children);
   }
 }

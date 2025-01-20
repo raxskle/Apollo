@@ -118,15 +118,12 @@ export function EditorContent() {
     return <Leaf {...props} />;
   }, []);
 
-  // const [operations, setOperations] = useState<>([]);
-
   useEffect(() => {
-    const client = new Client();
+    const client = new Client(editor);
     client.socketAdaptor.resigterAction<{ data: [string, OTClient][] }>(
       "updateUserCount",
       (res) => {
         const userList = res.data;
-        console.log("???updateUserCount", userList);
         // 更新user
 
         dispatch(
@@ -151,12 +148,13 @@ export function EditorContent() {
           document: res,
         })
       );
-      // client.setRevision(res.version); // Client的版本
+      client.setRevision(res.version); // Client的版本
       console.log("init document", res);
       Transforms.insertNodes(editor, res.content);
     });
 
     // 监听editor的变化
+    let operations: SlateOperation[] = [];
     const rawOnChange = editor.onChange;
     editor.onChange = (options?: { operation?: SlateOperation }) => {
       rawOnChange.call(editor, options);
@@ -164,9 +162,54 @@ export function EditorContent() {
         console.error("slate change>>>>>>>>>>>>>operation is undefined");
         return;
       }
+      if (options.operation.applyServer) {
+        // 应用服务端op
+        return;
+      }
 
+      if (options.operation.type === "set_selection") {
+        // 选中
+        return;
+      }
+
+      if (
+        options.operation.type === "merge_node" &&
+        !Editor.hasPath(editor, options.operation.path)
+      ) {
+        console.log(">>>>>>>>merge_node不存在路径", options.operation);
+        return;
+      }
+
+      // 拿history的op发送给服务端
       console.log("slate change>>>>>>>>>>>operation", options.operation);
-      client.applyClient(new Operation([options.operation], client.revision));
+
+      // 拿到history
+      const history = editor.history.undos
+        .map((item) => {
+          return item.operations;
+        })
+        .flat(1);
+      console.log(">>>>>>>>>>>>>>>", history);
+      // 如果是撤销
+      // todo: 当前 let operations 记录从页面打开开始，撤销时会将其它用户操作撤销掉
+      // 诸多问题，撤销最后在做
+      if (history.length < operations.length) {
+        client.applyClient(
+          new Operation(
+            operations.slice(history.length).map((op) => {
+              return { ...op, undo: true };
+            }),
+            client.revision
+          )
+        );
+      } else {
+        // 应用新的op
+        const newOps = history.slice(operations.length);
+        client.applyClient(new Operation([...newOps], client.revision));
+      }
+
+      // 更新记录
+      operations = history;
     };
 
     return () => {

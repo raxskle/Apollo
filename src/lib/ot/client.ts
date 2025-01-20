@@ -1,3 +1,4 @@
+import { Editor } from "slate";
 import {
   AwaitingConfirm,
   AwaitingWithBuffer,
@@ -12,10 +13,12 @@ export class Client {
   revision: number;
   editorAdaptor: EditorAdaptor; // 编辑器适配
   socketAdaptor: SocketAdaptor; // socket适配
+  inited: boolean; // 是否已经初始化文档
 
-  constructor() {
+  constructor(editorAdaptor: Editor) {
     this.state = new Synchronized();
     this.revision = 0;
+    this.inited = false;
     this.socketAdaptor = new SocketAdaptor();
     this.socketAdaptor.resigterAction<Operation>(
       "applyServer",
@@ -29,7 +32,7 @@ export class Client {
     this.socketAdaptor.resigterAction<Operation>("serverAck", () => {
       this.serverAck();
     });
-    this.editorAdaptor = new EditorAdaptor();
+    this.editorAdaptor = new EditorAdaptor(editorAdaptor);
   }
   isAlive() {
     return this.socketAdaptor.isAlive();
@@ -45,11 +48,19 @@ export class Client {
   }
 
   applyClient(operation: Operation) {
-    this.setRevision(this.revision + 1);
-    if (this.revision <= 1) {
-      console.log("Client.applyClient --- init document");
+    if (!this.inited) {
+      // 初始化insert_node文档，不需要状态转换
+      this.inited = true;
+      // this.setRevision(operation.targetVersion); // 也不需要更新版本
+      console.log(
+        "Client.applyClient --- init document >>> Client version",
+        this.revision
+      );
       return;
     }
+
+    // 本地版本更新
+    this.setRevision(operation.targetVersion);
 
     console.log("client.applyClient>>>>>>>before", this.state);
     this.setState(this.state.applyClient(this, operation));
@@ -76,6 +87,6 @@ export class Client {
   applyOperation(operation: Operation) {
     // 应用op
     // 通过editorAdaptor将op应用到当前文档model
-    this.editorAdaptor.applyOperation(operation);
+    this.editorAdaptor.applyOperation(this, operation);
   }
 }

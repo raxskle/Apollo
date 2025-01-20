@@ -1,4 +1,4 @@
-import { BaseEditor } from "slate";
+import { BaseEditor, BaseOperation } from "slate";
 import { ReactEditor } from "slate-react";
 import { HistoryEditor } from "slate-history";
 
@@ -68,11 +68,17 @@ export type CustomElement =
   | CheckListItemElement
   | ImageElement;
 
+export type CustomOperation = BaseOperation & {
+  applyServer?: boolean;
+  undo?: boolean;
+};
+
 declare module "slate" {
   interface CustomTypes {
     Editor: CustomEditorType;
     Element: CustomElement;
     Text: CustomText;
     Node: CustomElement | CustomText;
+    Operation: CustomOperation;
   }
 }
