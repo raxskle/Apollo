@@ -7,12 +7,7 @@ export class EditorAdaptor {
   constructor(editor: Editor) {
     this.editor = editor;
   }
-  applyOperation(client: Client, operation: Operation) {
-    // todo：校验op的版本号，虽然applayServer已经做了transform
-    console.log("editorAdaptor---------operation", operation);
-    // 设置当前版本号
-    client.setRevision(operation.targetVersion);
-
+  applyOperation(_client: Client, operation: Operation) {
     if (operation.actions.length > 0 && operation.actions[0].undo) {
       this.editor.undo();
     } else {
@@ -23,7 +18,5 @@ export class EditorAdaptor {
         }
       });
     }
-
-    console.log("op执行完成");
   }
 }

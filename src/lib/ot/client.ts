@@ -52,31 +52,25 @@ export class Client {
       // 初始化insert_node文档，不需要状态转换
       this.inited = true;
       // this.setRevision(operation.targetVersion); // 也不需要更新版本
-      console.log(
-        "Client.applyClient --- init document >>> Client version",
-        this.revision
-      );
+      console.log("applyClient --- init document >>> version", this.revision);
       return;
     }
 
     // 本地版本更新
-    this.setRevision(operation.targetVersion);
+    // this.setRevision(operation.targetVersion);
 
-    console.log("client.applyClient>>>>>>>before", this.state);
     this.setState(this.state.applyClient(this, operation));
-    console.log("client.applyClient<<<<<<<after", this.state);
+    console.log(`applyClient >>>>>>>> ver:${this.revision} `, this.state);
   }
 
   serverAck() {
-    console.log("client.serverAck>>>>>>>before", this.state);
     this.setState(this.state.serverAck(this));
-    console.log("client.serverAck<<<<<<<after", this.state);
+    console.log(`serverAck >>>>>>>> ver:${this.revision} `, this.state);
   }
 
   applyServer(operation: Operation) {
-    console.log("client.applyServer>>>>>>>before", this.state);
     this.setState(this.state.applyServer(this, operation));
-    console.log("client.applyServer<<<<<<<after", this.state);
+    console.log(`applyServer >>>>>>>> ver:${this.revision} `, this.state);
   }
 
   sendOperation(operation: Operation) {
@@ -87,6 +81,13 @@ export class Client {
   applyOperation(operation: Operation) {
     // 应用op
     // 通过editorAdaptor将op应用到当前文档model
+    console.log(
+      `applyOperation >>>>>>>> ver:${operation.targetVersion} `,
+      operation
+    );
+    // 设置当前版本号
+    this.setRevision(operation.targetVersion);
+
     this.editorAdaptor.applyOperation(this, operation);
   }
 }

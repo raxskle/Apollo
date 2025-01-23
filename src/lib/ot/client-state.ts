@@ -7,6 +7,7 @@ export class Synchronized {
   applyClient(client: Client, operation: Operation) {
     // 1. 发送op
     // 2. 转换状态AwaitingConfirm
+    client.setRevision(operation.targetVersion); // 版本+1
     client.sendOperation(operation);
     return new AwaitingConfirm(operation);
   }
@@ -29,10 +30,11 @@ export class AwaitingConfirm {
     this.outstanding = outstanding;
   }
 
-  applyClient(_client: Client, operation: Operation) {
+  applyClient(client: Client, operation: Operation) {
     // 等待ack时又有新的本地操作
     // 1. 缓存新的本地操作buffer
     // ，转换状态AwaitingWithBuffer
+    client.setRevision(operation.targetVersion); // 版本+1
     return new AwaitingWithBuffer(this.outstanding, operation);
   }
   serverAck() {
@@ -75,6 +77,7 @@ export class AwaitingWithBuffer {
   applyClient(_client: Client, operation: Operation) {
     // 等待ack，且本地有buffer时
     // 1. 合并buffer
+    // 版本不增
     const newBuffer = this.buffer.compose(operation);
     return new AwaitingWithBuffer(this.outstanding, newBuffer);
   }

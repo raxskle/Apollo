@@ -57,14 +57,18 @@ export class OTServer {
     return Array.from(this.clients);
   }
   // 接受文档内容op
-  receiveOperation(operation: Operation) {
-    // todo：transform op
+  receiveOperation(rawOperation: Operation) {
+    // server 要做的 transform op
+    // 将收到的op，转换为基于服务端最新状态的op
+    const operation = this.transformOp(rawOperation);
+    console.log(">>>>收到op>>>>转换前后：", rawOperation, operation);
 
-    // 如果是撤销
+    // 执行op
     if (operation.actions.length > 0 && operation.actions[0].undo) {
+      // 如果是撤销
       this.slate.undo();
     } else {
-      // 逐个执行op
+      // 逐个执行action
       withoutNormalizing(this.slate, () => {
         operation.actions.forEach((action, index) => {
           console.log(">>>>执行action", index, action);
@@ -78,5 +82,35 @@ export class OTServer {
     this.document.content = this.slate.children;
     this.document.lastModified = Date.now();
     this.document.version = operation.targetVersion;
+
+    return operation;
+  }
+  transformOp(op: Operation) {
+    // op是来自客户端的，它是在服务端op之后执行的
+    // 将op转换为基于当前版本的op
+    const serverVersion = this.document.version;
+    if (op.baseVersion === serverVersion) {
+      // op基于当前版本
+      return op;
+    } else {
+      // op版本只会小于当前版本
+      const index = this.operations.findIndex((item) => {
+        return item.baseVersion === op.baseVersion;
+      });
+      if (index === -1) {
+        throw new Error("op版本错误");
+      }
+
+      const serverOps = this.operations.slice(index);
+      let clientOp = op;
+      for (const serverOp of serverOps) {
+        // clientOp是后执行的
+        const [, op2] = serverOp.transform(clientOp);
+        clientOp = op2;
+        // [!] op1是服务端的op，不做处理
+        // op2
+      }
+      return clientOp;
+    }
   }
 }

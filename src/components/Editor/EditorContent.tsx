@@ -148,7 +148,7 @@ export function EditorContent() {
           document: res,
         })
       );
-      client.setRevision(res.version); // Client的版本
+      client.setRevision(res.version); // Client版本同步
       console.log("init document", res);
       Transforms.insertNodes(editor, res.content);
     });
@@ -172,16 +172,7 @@ export function EditorContent() {
         return;
       }
 
-      if (
-        options.operation.type === "merge_node" &&
-        !Editor.hasPath(editor, options.operation.path)
-      ) {
-        console.log(">>>>>>>>merge_node不存在路径", options.operation);
-        return;
-      }
-
       // 拿history的op发送给服务端
-      console.log("slate change>>>>>>>>>>>operation", options.operation);
 
       // 拿到history
       const history = editor.history.undos
@@ -189,7 +180,8 @@ export function EditorContent() {
           return item.operations;
         })
         .flat(1);
-      console.log(">>>>>>>>>>>>>>>", history);
+      console.log(">>>>>>>>>>history", history);
+
       // 如果是撤销
       // todo: 当前 let operations 记录从页面打开开始，撤销时会将其它用户操作撤销掉
       // 诸多问题，撤销最后在做
@@ -204,8 +196,14 @@ export function EditorContent() {
         );
       } else {
         // 应用新的op
-        const newOps = history.slice(operations.length);
-        client.applyClient(new Operation([...newOps], client.revision));
+        // 来自applyServer的op不触发
+        const newOps = history.slice(operations.length).filter((op) => {
+          return !op.applyServer;
+        });
+        // history多出的部分，可能是来自applyServer
+        if (newOps.length > 0) {
+          client.applyClient(new Operation([...newOps], client.revision));
+        }
       }
 
       // 更新记录

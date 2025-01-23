@@ -2,6 +2,7 @@ import Koa from "koa";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { OTServer } from "./ot";
+import { Operation } from "../src/lib/ot";
 
 process.on("uncaughtException", (error) => {
   console.error("捕捉到未捕获的异常:", error.message);
@@ -41,16 +42,16 @@ io.on("connection", (socket) => {
   socket.on("opFormClient", (msg) => {
     console.log("opFormClient", msg);
     // todo：transform，存储
-    otServer.receiveOperation(msg);
+    const toEmit = otServer.receiveOperation(Operation.formData(msg));
 
     setTimeout(() => {
       // 发送给其他客户端应用
-      socket.broadcast.emit("applyServer", msg);
+      socket.broadcast.emit("applyServer", toEmit);
     }, 1000);
     setTimeout(() => {
       // 回复ack
-      socket.emit("serverAck", msg);
-    }, 2000);
+      socket.emit("serverAck", toEmit);
+    }, 1000);
   });
 });
 
