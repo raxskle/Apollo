@@ -21,7 +21,11 @@ export function LeftSideBar() {
   const { content } = useSelector((state: RootState) => state.document);
 
   const headings = content.filter((item) => {
-    return isHeadingElement(item);
+    return (
+      isHeadingElement(item) &&
+      item.children.length > 0 &&
+      item.children[0].text.length > 0
+    );
   });
 
   return (
