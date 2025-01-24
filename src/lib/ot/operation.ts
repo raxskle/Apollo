@@ -114,6 +114,16 @@ export class Operation {
         const newOp2 = copy(op2);
         return [newOp1, newOp2];
       }
+    } else if (op1.type === "insert_text" && op2.type === "merge_node") {
+      //
+    } else if (op1.type === "insert_text" && op2.type === "move_node") {
+      //
+    } else if (op1.type === "insert_text" && op2.type === "remove_node") {
+      //
+    } else if (op1.type === "insert_text" && op2.type === "set_node") {
+      //
+    } else if (op1.type === "insert_text" && op2.type === "split_node") {
+      //
     }
 
     return [op1, op2];

@@ -1,15 +1,27 @@
-import { RenderElementProps } from "slate-react";
+import { Path } from "slate";
+import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 
 export const ParagraphElement = (props: RenderElementProps) => {
   const { attributes, element, children } = props;
-  if (element.type !== "paragraph") {
-    return <div>类型出错</div>;
-  }
 
   const empty =
     element.children.length === 0 ||
     (element.children.length === 1 && element.children[0].text.length === 0);
 
+  const editor = useSlateStatic();
+
+  // 判断元素是否被选中
+  const path = ReactEditor.findPath(editor, element);
+  const isSelected =
+    ReactEditor.isFocused(editor) &&
+    editor.selection &&
+    Path.equals(editor.selection.anchor.path, editor.selection.focus.path) &&
+    editor.selection.anchor.offset === editor.selection.focus.offset &&
+    Path.isAncestor(path, editor.selection?.anchor.path);
+
+  if (element.type !== "paragraph") {
+    return <div>类型出错</div>;
+  }
   return (
     <p
       {...attributes}
@@ -22,7 +34,7 @@ export const ParagraphElement = (props: RenderElementProps) => {
       }}
     >
       {children}
-      {empty && (
+      {empty && isSelected && (
         <span
           className="empty-placeholder"
           contentEditable="false"
