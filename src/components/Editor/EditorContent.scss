@@ -5,7 +5,8 @@
   justify-content: flex-start;
   align-items: center;
 
-  width: 100vw;
+  // width: 100%;
+  flex-grow: 1;
   min-width: 200px;
   height: 100%;
   box-sizing: border-box;
@@ -20,7 +21,7 @@
     padding-left: 50px;
     padding-right: 50px;
     padding-bottom: 200px;
-    width: 100vw;
+    width: 100%;
     max-width: 1000px;
     min-width: 200px;
     font-family: PingFang SC Medium;

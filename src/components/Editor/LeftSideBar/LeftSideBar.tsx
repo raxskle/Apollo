@@ -1,8 +1,7 @@
-import { useSelector } from "react-redux";
 import "./LeftSideBar.scss";
-import { RootState } from "../../../store";
 import { CustomElement, HeadingElement } from "../../../types/editor";
-import { Descendant } from "slate";
+import { Descendant, Element } from "slate";
+import { ReactEditor, useSlateStatic } from "slate-react";
 
 const isHeadingElement = (
   item: CustomElement | Descendant
@@ -18,7 +17,8 @@ const isHeadingElementList = (list: Descendant[]): list is HeadingElement[] => {
   });
 };
 export function LeftSideBar() {
-  const { content } = useSelector((state: RootState) => state.document);
+  const editor = useSlateStatic();
+  const content = editor.children.filter((node) => Element.isElement(node));
 
   const headings = content.filter((item) => {
     return (
@@ -39,6 +39,13 @@ export function LeftSideBar() {
         <div className="detail-bar">
           {isHeadingElementList(headings) &&
             headings.map((heading, index) => {
+              const scrollToElement = () => {
+                const domNode = ReactEditor.toDOMNode(editor, heading);
+                if (domNode) {
+                  domNode.scrollIntoView({ behavior: "smooth" });
+                }
+              };
+
               return (
                 <div
                   className="detail-item"
@@ -51,6 +58,7 @@ export function LeftSideBar() {
                           ? "32px"
                           : "0px",
                   }}
+                  onClick={scrollToElement}
                 >
                   {heading.children[0].text}
                 </div>

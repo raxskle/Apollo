@@ -221,7 +221,6 @@ export function EditorContent() {
     <div className="editor-content">
       {document.content.length > 0 && (
         <>
-          <LeftSideBar />
           <Slate
             editor={editor}
             initialValue={document.content}
@@ -229,6 +228,7 @@ export function EditorContent() {
               dispatch(changeDocumentContent({ content: value }));
             }}
           >
+            <LeftSideBar />
             <HoveringToolbar />
             <Editable
               renderElement={renderElement}

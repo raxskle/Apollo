@@ -19,7 +19,12 @@ const BootstrapIconButton = styled(IconButton)({
   },
 });
 
-export function NavBar() {
+type NavBarProps = {
+  setShowCommentBar: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export function NavBar(props: NavBarProps) {
+  const { setShowCommentBar } = props;
   const { document, collaborator } = useSelector((state: RootState) => state);
   const dispatch = useDispatch();
 
@@ -66,7 +71,14 @@ export function NavBar() {
         </div>
 
         <Divider orientation="vertical" flexItem />
-        <div className="comment">
+        <div
+          className="comment"
+          onClick={() => {
+            setShowCommentBar((v) => {
+              return !v;
+            });
+          }}
+        >
           <BootstrapIconButton
             color="primary"
             aria-label="add to shopping cart"
