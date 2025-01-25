@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "./EditorContent.scss";
 import { OTClient } from "../../../server/ot/index";
 import {
@@ -29,8 +29,9 @@ import {
   Collaborator,
   Document,
   initDocument,
-} from "../../store/reducers";
+} from "../../store/docSlice";
 import { Client, Operation } from "../../lib/ot";
+import { CommentBar } from "./CommentBar/CommentBar";
 
 // 文本leaf样式
 const Leaf = (props: RenderLeafProps) => {
@@ -106,7 +107,7 @@ const CustomEditor = {
 export function EditorContent() {
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
 
-  const document = useSelector((state: RootState) => state.document);
+  const document = useSelector((state: RootState) => state.doc.document);
   const dispatch = useDispatch();
 
   const renderElement = useCallback(
@@ -217,8 +218,18 @@ export function EditorContent() {
     };
   }, [editor, dispatch]);
 
+  const { showCommentBar } = useSelector((state: RootState) => state.view);
+
+  const [offsetTop, setOffsetTop] = useState(0);
+
   return (
-    <div className="editor-content">
+    <div
+      className="editor-content"
+      onScroll={(e) => {
+        console.log("?>>>>>>", (e.target as HTMLElement).scrollTop);
+        setOffsetTop((e.target as HTMLElement).scrollTop);
+      }}
+    >
       {document.content.length > 0 && (
         <>
           <Slate
@@ -252,6 +263,11 @@ export function EditorContent() {
                 }
               }}
             />
+            <CommentBar offsetTop={offsetTop} />
+            <div
+              className="comment-bar-block"
+              style={{ width: showCommentBar ? "280px" : "0px" }}
+            ></div>
           </Slate>
         </>
       )}

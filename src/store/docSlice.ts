@@ -120,7 +120,7 @@ const initialState: SystemState = {
   collaborator: [],
 };
 
-const rootSlice = createSlice({
+const docSlice = createSlice({
   name: "root",
   initialState,
   reducers: {
@@ -152,6 +152,6 @@ export const {
   changeDocumentTitle,
   changeDocumentContent,
   updateCollaborators,
-} = rootSlice.actions;
-export default rootSlice.reducer;
-export type RootState = ReturnType<typeof rootSlice.reducer>;
+} = docSlice.actions;
+export default docSlice.reducer;
+export type DocState = ReturnType<typeof docSlice.reducer>;

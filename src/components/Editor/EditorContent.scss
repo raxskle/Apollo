@@ -12,6 +12,10 @@
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
 
   // <Slate />
   > div[role="textbox"] {
@@ -21,7 +25,8 @@
     padding-left: 50px;
     padding-right: 50px;
     padding-bottom: 200px;
-    width: 100%;
+    // width: 100%;
+    flex-grow: 1;
     max-width: 1000px;
     min-width: 200px;
     font-family: PingFang SC Medium;
@@ -34,5 +39,11 @@
     *::selection {
       background: rgba(49, 136, 236, 0.4);
     }
+  }
+
+  .comment-bar-block {
+    transition: width 0.2s ease;
+    flex-grow: 0;
+    flex-shrink: 0;
   }
 }

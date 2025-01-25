@@ -2,7 +2,7 @@
 
 import { Socket } from "socket.io";
 import { getRandomColor } from "../../src/utils";
-import { Document, initialContent } from "../../src/store/reducers";
+import { Document, initialContent } from "../../src/store/docSlice";
 import { Operation } from "../../src/lib/ot";
 import { Editor, createEditor, withoutNormalizing } from "slate";
 import { withHistory } from "slate-history";

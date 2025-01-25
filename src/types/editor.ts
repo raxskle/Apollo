@@ -22,36 +22,45 @@ export type CustomText = {
   backgroundColor?: string;
 };
 
-export type ParagraphElement = {
+export type ElementWithComment = {
+  comments?: {
+    id: string;
+    content: string;
+    author: string;
+    time: number;
+  }[];
+};
+
+export type ParagraphElement = ElementWithComment & {
   type: "paragraph";
   align: AlignType;
   children: CustomText[];
 };
 
-export type HeadingElement = {
+export type HeadingElement = ElementWithComment & {
   type: "heading-one" | "heading-two" | "heading-three";
   level: number;
   align: AlignType;
   children: CustomText[];
 };
 
-export type blockQuoteElement = {
+export type blockQuoteElement = ElementWithComment & {
   type: "block-quote";
   children: CustomText[];
 };
 
-export type CodeElement = {
+export type CodeElement = ElementWithComment & {
   type: "code";
   children: CustomText[];
 };
 
-export type CheckListItemElement = {
+export type CheckListItemElement = ElementWithComment & {
   type: "check-list-item";
   checked: boolean;
   children: CustomText[];
 };
 
-export type ImageElement = {
+export type ImageElement = ElementWithComment & {
   type: "image";
   url: string;
   alt: string;

@@ -8,8 +8,10 @@ import CommentIcon from "../../../assets/icons/comment.svg";
 import Divider from "@mui/material/Divider";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import { useDispatch, useSelector } from "react-redux";
-import { changeDocumentTitle, RootState } from "../../../store/reducers.ts";
+import { changeDocumentTitle } from "../../../store/docSlice.ts";
 import { getRelativeTime } from "../../../utils/index.ts";
+import { RootState } from "../../../store/index.ts";
+import { switchShowCommentBar } from "../../../store/viewSlice.ts";
 
 const BootstrapIconButton = styled(IconButton)({
   color: "black",
@@ -19,13 +21,10 @@ const BootstrapIconButton = styled(IconButton)({
   },
 });
 
-type NavBarProps = {
-  setShowCommentBar: React.Dispatch<React.SetStateAction<boolean>>;
-};
-
-export function NavBar(props: NavBarProps) {
-  const { setShowCommentBar } = props;
-  const { document, collaborator } = useSelector((state: RootState) => state);
+export function NavBar() {
+  const { document, collaborator } = useSelector(
+    (state: RootState) => state.doc
+  );
   const dispatch = useDispatch();
 
   const relativeTime = getRelativeTime(document.lastModified);
@@ -74,9 +73,7 @@ export function NavBar(props: NavBarProps) {
         <div
           className="comment"
           onClick={() => {
-            setShowCommentBar((v) => {
-              return !v;
-            });
+            dispatch(switchShowCommentBar());
           }}
         >
           <BootstrapIconButton
