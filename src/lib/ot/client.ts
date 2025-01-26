@@ -21,25 +21,42 @@ export class Client {
     this.revision = 0;
     this.inited = false;
     this.socketAdaptor = new SocketAdaptor(socket);
+
+    // 处理applyServer
+    this.handleApplyServer = (operationData: Operation) => {
+      // 需要用箭头函数包裹，否则this会指向socketAdaptor
+      // 当收到服务端op时，将data转换为Operation
+      const operation = Operation.formData(operationData);
+      this.applyServer(operation);
+    };
     this.socketAdaptor.resigterAction<Operation>(
       "applyServer",
-      (operationData: Operation) => {
-        // 需要用箭头函数包裹，否则this会指向socketAdaptor
-        // 当收到服务端op时，将data转换为Operation
-        const operation = Operation.formData(operationData);
-        this.applyServer(operation);
-      }
+      this.handleApplyServer
     );
-    this.socketAdaptor.resigterAction<Operation>("serverAck", () => {
+
+    // 处理serverAck
+    this.handleServerAck = () => {
       this.serverAck();
-    });
+    };
+    this.socketAdaptor.resigterAction<Operation>(
+      "serverAck",
+      this.handleServerAck
+    );
+
     this.editorAdaptor = new EditorAdaptor(editorAdaptor);
   }
+  handleApplyServer;
+  handleServerAck;
   isAlive() {
     return this.socketAdaptor.isAlive();
   }
   destroy() {
     this.socketAdaptor.destroy();
+    this.socketAdaptor.offAction<Operation>(
+      "applyServer",
+      this.handleApplyServer
+    );
+    this.socketAdaptor.offAction<Operation>("serverAck", this.handleServerAck);
   }
   setState(state: Synchronized | AwaitingConfirm | AwaitingWithBuffer) {
     this.state = state;

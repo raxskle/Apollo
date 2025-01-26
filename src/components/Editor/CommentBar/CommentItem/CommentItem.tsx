@@ -1,4 +1,3 @@
-import { useSlateStatic } from "slate-react";
 import { Comment } from "../../../../store/docSlice";
 import "./CommentItem.scss";
 import { getRelativeTime } from "../../../../utils";
@@ -9,9 +8,6 @@ type CommentItemProps = {
 
 export function CommentItem(props: CommentItemProps) {
   const { comment } = props;
-
-  const editor = useSlateStatic();
-  console.log(">>>>>>>>>>", editor.children[0]);
 
   return (
     <div className="comment-bar-item">
