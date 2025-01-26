@@ -7,6 +7,7 @@ import {
 import { EditorAdaptor } from "./editor-adaptor";
 import { Operation } from "./operation";
 import { SocketAdaptor } from "./socket-adaptor";
+import { Socket } from "socket.io-client";
 
 export class Client {
   state: Synchronized | AwaitingConfirm | AwaitingWithBuffer;
@@ -15,11 +16,11 @@ export class Client {
   socketAdaptor: SocketAdaptor; // socket适配
   inited: boolean; // 是否已经初始化文档
 
-  constructor(editorAdaptor: Editor) {
+  constructor(editorAdaptor: Editor, socket: Socket) {
     this.state = new Synchronized();
     this.revision = 0;
     this.inited = false;
-    this.socketAdaptor = new SocketAdaptor();
+    this.socketAdaptor = new SocketAdaptor(socket);
     this.socketAdaptor.resigterAction<Operation>(
       "applyServer",
       (operationData: Operation) => {

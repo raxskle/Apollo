@@ -1,26 +1,18 @@
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 
 export class SocketAdaptor {
   socket: Socket;
-  constructor() {
-    this.socket = io("http://localhost:3002/", {});
-    this.initSocket(this.socket);
+  constructor(socket: Socket) {
+    console.log("init socket");
+    // this.socket = io("http://localhost:3002/", {});
+    this.socket = socket;
+    // this.initSocket(this.socket);
   }
-  initSocket(socket: Socket) {
-    socket.on("connect", () => {
-      console.log("connect", socket.id);
-    });
-    socket.on("error", (error) => {
-      console.log("socket:error:", error);
-    });
-    socket.on("disconnect", (reason) => {
-      console.log("disconnect", reason);
-    });
-
-    socket.emit("hello", "world");
-  }
+  // initSocket(socket: Socket) {
+  //   //
+  // }
   destroy() {
-    this.socket.disconnect();
+    // this.socket.disconnect();
   }
   isAlive() {
     return this.socket.connected;
@@ -32,5 +24,8 @@ export class SocketAdaptor {
   resigterAction<Data>(method: string, callback: (arg: Data) => void) {
     // 注册回调，收到服务器method时调用cb
     this.socket.on(method, callback);
+  }
+  offAction<Data>(method: string, handler: (arg: Data) => void) {
+    this.socket.off(method, handler);
   }
 }

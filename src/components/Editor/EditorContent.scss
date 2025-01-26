@@ -40,10 +40,10 @@
       background: rgba(49, 136, 236, 0.4);
     }
   }
+}
 
-  .comment-bar-block {
-    transition: width 0.2s ease;
-    flex-grow: 0;
-    flex-shrink: 0;
-  }
+.comment-bar-block {
+  transition: width 0.2s ease;
+  flex-grow: 0;
+  flex-shrink: 0;
 }

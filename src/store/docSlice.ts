@@ -2,10 +2,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AlignType, CustomElement } from "../types/editor";
 import { Descendant } from "slate";
 
-type Comment = {
+export type Comment = {
+  ref?: CustomElement;
   content: string;
   time: number;
-  user: User;
+  author: User;
+  id: string;
 };
 
 export type Document = {

@@ -53,6 +53,11 @@ io.on("connection", (socket) => {
       socket.emit("serverAck", toEmit);
     }, 1000);
   });
+
+  socket.on("changeDocTitle", (msg) => {
+    otServer.setDocumentTitle(msg);
+    socket.broadcast.emit("changeDocTitle", msg);
+  });
 });
 
 httpServer.listen(3002, () => {

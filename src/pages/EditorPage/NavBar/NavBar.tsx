@@ -12,6 +12,7 @@ import { changeDocumentTitle } from "../../../store/docSlice.ts";
 import { getRelativeTime } from "../../../utils/index.ts";
 import { RootState } from "../../../store/index.ts";
 import { switchShowCommentBar } from "../../../store/viewSlice.ts";
+import { getSocket } from "../../../network/index.ts";
 
 const BootstrapIconButton = styled(IconButton)({
   color: "black",
@@ -46,6 +47,9 @@ export function NavBar() {
             className="file-name-input-bar"
             value={document.title}
             onChange={(e) => {
+              console.log("emit changeDocTitle");
+              const socket = getSocket();
+              socket.emit("changeDocTitle", e.target.value);
               dispatch(changeDocumentTitle({ title: e.target.value }));
             }}
           />

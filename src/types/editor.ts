@@ -1,4 +1,4 @@
-import { BaseEditor, BaseOperation } from "slate";
+import { BaseEditor, BaseOperation, Descendant } from "slate";
 import { ReactEditor } from "slate-react";
 import { HistoryEditor } from "slate-history";
 
@@ -22,45 +22,36 @@ export type CustomText = {
   backgroundColor?: string;
 };
 
-export type ElementWithComment = {
-  comments?: {
-    id: string;
-    content: string;
-    author: string;
-    time: number;
-  }[];
-};
-
-export type ParagraphElement = ElementWithComment & {
+export type ParagraphElement = {
   type: "paragraph";
   align: AlignType;
   children: CustomText[];
 };
 
-export type HeadingElement = ElementWithComment & {
+export type HeadingElement = {
   type: "heading-one" | "heading-two" | "heading-three";
   level: number;
   align: AlignType;
   children: CustomText[];
 };
 
-export type blockQuoteElement = ElementWithComment & {
+export type blockQuoteElement = {
   type: "block-quote";
   children: CustomText[];
 };
 
-export type CodeElement = ElementWithComment & {
+export type CodeElement = {
   type: "code";
   children: CustomText[];
 };
 
-export type CheckListItemElement = ElementWithComment & {
+export type CheckListItemElement = {
   type: "check-list-item";
   checked: boolean;
   children: CustomText[];
 };
 
-export type ImageElement = ElementWithComment & {
+export type ImageElement = {
   type: "image";
   url: string;
   alt: string;
@@ -81,6 +72,10 @@ export type CustomOperation = BaseOperation & {
   applyServer?: boolean;
   undo?: boolean;
 };
+
+export function isCustomElement(node: Descendant): node is CustomElement {
+  return node.type !== undefined;
+}
 
 declare module "slate" {
   interface CustomTypes {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import "./EditorContent.scss";
 import { OTClient } from "../../../server/ot/index";
 import {
@@ -29,9 +29,11 @@ import {
   Collaborator,
   Document,
   initDocument,
+  changeDocumentTitle,
 } from "../../store/docSlice";
 import { Client, Operation } from "../../lib/ot";
 import { CommentBar } from "./CommentBar/CommentBar";
+import { getSocket } from "../../network";
 
 // 文本leaf样式
 const Leaf = (props: RenderLeafProps) => {
@@ -120,30 +122,28 @@ export function EditorContent() {
   }, []);
 
   useEffect(() => {
-    const client = new Client(editor);
+    const client = new Client(editor, getSocket());
+
+    const handleUpdateUserCount = (res: { data: [string, OTClient][] }) => {
+      const userList = res.data;
+      // 更新user
+
+      dispatch(
+        updateCollaborators({
+          collaborators: userList.map((item) => {
+            const [socketId, user] = item;
+            return new Collaborator(socketId, user.userName, user.displayColor);
+          }),
+        })
+      );
+    };
     client.socketAdaptor.resigterAction<{ data: [string, OTClient][] }>(
       "updateUserCount",
-      (res) => {
-        const userList = res.data;
-        // 更新user
-
-        dispatch(
-          updateCollaborators({
-            collaborators: userList.map((item) => {
-              const [socketId, user] = item;
-              return new Collaborator(
-                socketId,
-                user.userName,
-                user.displayColor
-              );
-            }),
-          })
-        );
-      }
+      handleUpdateUserCount
     );
 
     // 初始化文档
-    client.socketAdaptor.resigterAction<Document>("initialDocument", (res) => {
+    const handleInitialDocument = (res: Document) => {
       dispatch(
         initDocument({
           document: res,
@@ -152,7 +152,11 @@ export function EditorContent() {
       client.setRevision(res.version); // Client版本同步
       console.log("init document", res);
       Transforms.insertNodes(editor, res.content);
-    });
+    };
+    client.socketAdaptor.resigterAction<Document>(
+      "initialDocument",
+      handleInitialDocument
+    );
 
     // 监听editor的变化
     let operations: SlateOperation[] = [];
@@ -213,64 +217,79 @@ export function EditorContent() {
 
     return () => {
       client.destroy();
+      client.socketAdaptor.offAction<{ data: [string, OTClient][] }>(
+        "updateUserCount",
+        handleUpdateUserCount
+      );
+
+      client.socketAdaptor.offAction<Document>(
+        "initialDocument",
+        handleInitialDocument
+      );
       // 取消监听
       editor.onChange = rawOnChange;
     };
   }, [editor, dispatch]);
 
+  useEffect(() => {
+    const socket = getSocket();
+    const handleChangeDocTitle = (title: string) => {
+      dispatch(changeDocumentTitle({ title: title }));
+    };
+    socket.on("changeDocTitle", handleChangeDocTitle);
+
+    return () => {
+      socket.off("changeDocTitle", handleChangeDocTitle);
+    };
+  }, [dispatch]);
+
   const { showCommentBar } = useSelector((state: RootState) => state.view);
 
-  const [offsetTop, setOffsetTop] = useState(0);
-
   return (
-    <div
-      className="editor-content"
-      onScroll={(e) => {
-        console.log("?>>>>>>", (e.target as HTMLElement).scrollTop);
-        setOffsetTop((e.target as HTMLElement).scrollTop);
-      }}
-    >
-      {document.content.length > 0 && (
-        <>
-          <Slate
-            editor={editor}
-            initialValue={document.content}
-            onChange={(value) => {
-              dispatch(changeDocumentContent({ content: value }));
-            }}
-          >
-            <LeftSideBar />
-            <HoveringToolbar />
-            <Editable
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              onKeyDown={(event) => {
-                if (!event.ctrlKey) {
-                  return;
-                }
-                switch (event.key) {
-                  case "`": {
-                    event.preventDefault();
-                    CustomEditor.toggleCodeBlock(editor);
-                    break;
-                  }
-
-                  case "b": {
-                    event.preventDefault();
-                    CustomEditor.toggleBoldMark(editor);
-                    break;
-                  }
-                }
+    <>
+      <div className="editor-content">
+        {document.content.length > 0 && (
+          <>
+            <Slate
+              editor={editor}
+              initialValue={document.content}
+              onChange={(value) => {
+                dispatch(changeDocumentContent({ content: value }));
               }}
-            />
-            <CommentBar offsetTop={offsetTop} />
-            <div
-              className="comment-bar-block"
-              style={{ width: showCommentBar ? "280px" : "0px" }}
-            ></div>
-          </Slate>
-        </>
-      )}
-    </div>
+            >
+              <LeftSideBar />
+              <HoveringToolbar />
+              <Editable
+                renderElement={renderElement}
+                renderLeaf={renderLeaf}
+                onKeyDown={(event) => {
+                  if (!event.ctrlKey) {
+                    return;
+                  }
+                  switch (event.key) {
+                    case "`": {
+                      event.preventDefault();
+                      CustomEditor.toggleCodeBlock(editor);
+                      break;
+                    }
+
+                    case "b": {
+                      event.preventDefault();
+                      CustomEditor.toggleBoldMark(editor);
+                      break;
+                    }
+                  }
+                }}
+              />
+              <CommentBar />
+            </Slate>
+          </>
+        )}
+      </div>
+      <div
+        className="comment-bar-block"
+        style={{ width: showCommentBar ? "280px" : "0px" }}
+      ></div>
+    </>
   );
 }

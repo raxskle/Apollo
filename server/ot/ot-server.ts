@@ -7,16 +7,57 @@ import { Operation } from "../../src/lib/ot";
 import { Editor, createEditor, withoutNormalizing } from "slate";
 import { withHistory } from "slate-history";
 import { JSDOM } from "jsdom";
+import { AlignType } from "../../src/types/editor";
 
 const serverStartTime = Date.now();
 
-const initialDocument = {
+const initialDocument: Document = {
   id: "0001",
   title: "文档1",
   content: initialContent,
   lastModified: serverStartTime,
   createdTime: serverStartTime,
-  comments: [],
+  comments: [
+    {
+      ref: {
+        type: "heading-one",
+        level: 1,
+        align: AlignType.Left,
+        children: [{ text: "This is editable heading-one!", italic: true }],
+      },
+      content: "this is a comment",
+      author: {
+        id: "001",
+        name: "raxssdas",
+      },
+      id: "comment001",
+      time: 1737896252231,
+    },
+    {
+      ref: {
+        type: "heading-three",
+        level: 3,
+        align: AlignType.Left,
+        children: [{ text: "This is editable heading-three!" }],
+      },
+      content: "this is a comment333333",
+      author: {
+        id: "001",
+        name: "raxssdas",
+      },
+      id: "comment002",
+      time: 1737896252231,
+    },
+    {
+      content: "this is a comment333333",
+      author: {
+        id: "001",
+        name: "raxssdas",
+      },
+      id: "comment002",
+      time: 1737896252231,
+    },
+  ],
   version: 1,
 };
 
@@ -55,6 +96,9 @@ export class OTServer {
   }
   getClients() {
     return Array.from(this.clients);
+  }
+  setDocumentTitle(title: string) {
+    this.document.title = title;
   }
   // 接受文档内容op
   receiveOperation(rawOperation: Operation) {
