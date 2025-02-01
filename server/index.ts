@@ -47,11 +47,11 @@ io.on("connection", (socket) => {
     setTimeout(() => {
       // 发送给其他客户端应用
       socket.broadcast.emit("applyServer", toEmit);
-    }, 1000);
+    }, 2000);
     setTimeout(() => {
       // 回复ack
       socket.emit("serverAck", toEmit.operation);
-    }, 1000);
+    }, 2000);
   });
 
   socket.on("changeDocTitle", (msg) => {

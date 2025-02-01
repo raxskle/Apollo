@@ -62,7 +62,7 @@ export const useRemoteSelection = () => {
       // todo: 修改用户光标
       operation.actions.forEach((action) => {
         // 对于每个action，修改每个remoteSelection
-        // 仅处理insert_text, insert_node, remove_text, remove_node
+        // 只需处理action的path和offset在remoteSelection之前的情况
         Object.entries(remoteSelections).forEach(([, selection]) => {
           if (action.type === "insert_text") {
             if (arePathsEqual(action.path, selection.focus.path)) {

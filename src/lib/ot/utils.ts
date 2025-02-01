@@ -15,7 +15,7 @@ export function arePathsEqual(pathA: number[], pathB: number[]): boolean {
   return true;
 }
 
-// 是否是前面的父级节点
+// b是否是a前面的父级节点
 export function isBeforeAndSameParent(
   pathA: number[],
   pathB: number[]
@@ -30,7 +30,7 @@ export function isBeforeAndSameParent(
   return false;
 }
 
-// 是否是同一父节点的前面的同级节点
+// b是否是a同一父节点的前面的同级节点
 export function isBeforeAndSameSibling(
   pathA: number[],
   pathB: number[]
@@ -45,6 +45,11 @@ export function isBeforeAndSameSibling(
     return true;
   }
   return false;
+}
+
+// b是否是a的父节点
+export function isParent(pathA: number[], pathB: number[]): boolean {
+  return pathB.length === 1 && pathA.length === 2 && pathB[0] === pathA[0];
 }
 
 export const copy = (
