@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BasePoint, Node, NodeEntry, Range } from "slate";
 import { CustomText } from "../../types/editor";
 
@@ -16,16 +16,6 @@ export const useRemoteSelection = () => {
   const [remoteSelections, setRemoteSelections] = useState<
     Record<string, RemoteSelection>
   >({});
-
-  useEffect(() => {
-    setRemoteSelections({
-      "123": {
-        userId: "123",
-        displayColor: "pink",
-        focus: { path: [0, 0], offset: 3 },
-      },
-    });
-  }, []);
 
   const decorate = ([node, path]: NodeEntry): Range[] => {
     const ranges: (Range & {

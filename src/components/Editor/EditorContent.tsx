@@ -234,7 +234,6 @@ export function EditorContent() {
 
       if (options.operation.type === "set_selection") {
         // 选中
-        console.log("set_selection>>>>>>>>>>", options.operation);
         const socket = getSocket();
         socket.emit("updateRemoteSelection", {
           focus: options.operation.newProperties?.focus,
