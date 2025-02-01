@@ -34,6 +34,8 @@ import {
 import { Client, Operation } from "../../lib/ot";
 import { CommentBar } from "./CommentBar/CommentBar";
 import { getSocket } from "../../network";
+import { RemoteSelection, useRemoteSelection } from "./useRemoteSelection";
+import { cloneDeep } from "lodash";
 
 // 文本leaf样式
 const Leaf = (props: RenderLeafProps) => {
@@ -41,6 +43,7 @@ const Leaf = (props: RenderLeafProps) => {
     <span
       {...props.attributes}
       style={{
+        position: "relative",
         fontWeight: props.leaf.bold ? "bold" : "normal",
         textDecoration: props.leaf.underlined ? "underline" : "none",
         fontStyle: props.leaf.italic ? "italic" : "normal",
@@ -63,6 +66,35 @@ const Leaf = (props: RenderLeafProps) => {
         </code>
       ) : (
         <>{props.children}</>
+      )}
+
+      {/* 选中 */}
+      {props.leaf.isSelection && (
+        <span
+          className="remote-selection"
+          {...props.attributes}
+          style={{
+            borderRight: `0.08em solid ${props.leaf.selectionUser?.displayColor}`,
+            opacity: "0.6",
+          }} // 40 表示透明度
+        >
+          <div
+            className="remote-selection-bar"
+            style={{
+              backgroundColor: `${props.leaf.selectionUser?.displayColor}`,
+            }}
+          >
+            <div
+              className="remote-selection-detail"
+              contentEditable="false"
+              style={{
+                backgroundColor: `${props.leaf.selectionUser?.displayColor}`,
+              }}
+            >
+              {props.leaf.selectionUser?.userId}
+            </div>
+          </div>
+        </span>
       )}
     </span>
   );
@@ -112,6 +144,8 @@ export function EditorContent() {
   const document = useSelector((state: RootState) => state.doc.document);
   const dispatch = useDispatch();
 
+  const { decorate, setRemoteSelections } = useRemoteSelection();
+
   const renderElement = useCallback(
     (props: RenderElementProps) => <ElementWithAddBar elementProps={props} />,
     []
@@ -124,6 +158,7 @@ export function EditorContent() {
   useEffect(() => {
     const client = new Client(editor, getSocket());
 
+    // 注册socket处理 更新用户数量
     const handleUpdateUserCount = (res: { data: [string, OTClient][] }) => {
       const userList = res.data;
       // 更新user
@@ -136,13 +171,26 @@ export function EditorContent() {
           }),
         })
       );
+
+      // 用户光标取消显示
+      setRemoteSelections((prev) => {
+        const newSelections = cloneDeep(prev);
+
+        Object.keys(newSelections).forEach((userId) => {
+          if (!userList.find((item) => item[1].userName === userId)) {
+            delete newSelections[userId];
+          }
+        });
+
+        return newSelections;
+      });
     };
     client.socketAdaptor.resigterAction<{ data: [string, OTClient][] }>(
       "updateUserCount",
       handleUpdateUserCount
     );
 
-    // 初始化文档
+    // 注册socket处理 初始化文档
     const handleInitialDocument = (res: Document) => {
       dispatch(
         initDocument({
@@ -156,6 +204,18 @@ export function EditorContent() {
     client.socketAdaptor.resigterAction<Document>(
       "initialDocument",
       handleInitialDocument
+    );
+
+    // 注册socket处理 远端用户光标
+    const handleRemoteSelection = (selection: RemoteSelection) => {
+      setRemoteSelections((prev) => ({
+        ...prev,
+        [selection.userId]: selection,
+      }));
+    };
+    client.socketAdaptor.resigterAction<RemoteSelection>(
+      "updateRemoteSelection",
+      handleRemoteSelection
     );
 
     // 监听editor的变化
@@ -174,6 +234,11 @@ export function EditorContent() {
 
       if (options.operation.type === "set_selection") {
         // 选中
+        console.log("set_selection>>>>>>>>>>", options.operation);
+        const socket = getSocket();
+        socket.emit("updateRemoteSelection", {
+          focus: options.operation.newProperties?.focus,
+        });
         return;
       }
 
@@ -226,10 +291,15 @@ export function EditorContent() {
         "initialDocument",
         handleInitialDocument
       );
+
+      client.socketAdaptor.offAction<RemoteSelection>(
+        "updateRemoteSelection",
+        handleRemoteSelection
+      );
       // 取消监听
       editor.onChange = rawOnChange;
     };
-  }, [editor, dispatch]);
+  }, [editor, dispatch, setRemoteSelections]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -260,6 +330,7 @@ export function EditorContent() {
               <LeftSideBar />
               <HoveringToolbar />
               <Editable
+                decorate={decorate}
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
                 onKeyDown={(event) => {

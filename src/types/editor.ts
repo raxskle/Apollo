@@ -20,6 +20,11 @@ export type CustomText = {
   code?: boolean;
   color?: string;
   backgroundColor?: string;
+  isSelection?: boolean; // 其他用户选中光标
+  selectionUser?: {
+    userId: string;
+    displayColor: string;
+  };
 };
 
 export type ParagraphElement = {

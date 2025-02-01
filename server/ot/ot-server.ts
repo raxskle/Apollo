@@ -67,7 +67,7 @@ export class OTClient {
   displayColor: string;
   constructor(id: string) {
     this.socketId = id;
-    this.userName = "USER1";
+    this.userName = id.slice(0, 4);
     this.displayColor = getRandomColor();
   }
 }
@@ -93,6 +93,9 @@ export class OTServer {
   }
   clientDisconnect(socket: Socket) {
     this.clients.delete(socket.id);
+  }
+  getClient(socketId: string) {
+    return this.clients.get(socketId);
   }
   getClients() {
     return Array.from(this.clients);

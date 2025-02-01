@@ -58,6 +58,16 @@ io.on("connection", (socket) => {
     otServer.setDocumentTitle(msg);
     socket.broadcast.emit("changeDocTitle", msg);
   });
+
+  // 远端用户选择，广播给其他用户
+  socket.on("updateRemoteSelection", (msg) => {
+    const client = otServer.getClient(socket.id);
+    socket.broadcast.emit("updateRemoteSelection", {
+      focus: msg.focus,
+      userId: client?.userName ?? "unknown",
+      displayColor: client?.displayColor ?? "green",
+    });
+  });
 });
 
 httpServer.listen(3002, () => {
