@@ -129,8 +129,15 @@ const docSlice = createSlice({
     initDocument: (state, action: PayloadAction<{ document: Document }>) => {
       state.document = action.payload.document;
     },
+    updateLastModified: (
+      state,
+      action: PayloadAction<{ lastModified: number }>
+    ) => {
+      state.document.lastModified = action.payload.lastModified;
+    },
     changeDocumentTitle: (state, action: PayloadAction<{ title: string }>) => {
       state.document.title = action.payload.title;
+      state.document.lastModified = Date.now();
     },
     changeDocumentContent: (
       state,
@@ -154,6 +161,7 @@ export const {
   changeDocumentTitle,
   changeDocumentContent,
   updateCollaborators,
+  updateLastModified,
 } = docSlice.actions;
 export default docSlice.reducer;
 export type DocState = ReturnType<typeof docSlice.reducer>;

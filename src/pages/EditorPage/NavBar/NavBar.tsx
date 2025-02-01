@@ -13,6 +13,7 @@ import { getRelativeTime } from "../../../utils/index.ts";
 import { RootState } from "../../../store/index.ts";
 import { switchShowCommentBar } from "../../../store/viewSlice.ts";
 import { getSocket } from "../../../network/index.ts";
+import { useEffect, useState } from "react";
 
 const BootstrapIconButton = styled(IconButton)({
   color: "black",
@@ -29,6 +30,16 @@ export function NavBar() {
   const dispatch = useDispatch();
 
   const relativeTime = getRelativeTime(document.lastModified);
+  const [, forceUpdate] = useState({});
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      forceUpdate({});
+    }, 1000 * 60);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <div className="navbar">
@@ -54,7 +65,9 @@ export function NavBar() {
             }}
           />
         </div>
-        <div className="tipbar-last-edit">最近修改：{relativeTime}</div>
+        {document.lastModified !== 0 && (
+          <div className="tipbar-last-edit">最近修改：{relativeTime}</div>
+        )}
       </div>
 
       <div className="navbar-right">

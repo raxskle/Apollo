@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
   // 和Slate调用client的applyClient区分
   socket.on("opFormClient", (msg) => {
     console.log("opFormClient", msg);
-    // todo：transform，存储
+
     const toEmit = otServer.receiveOperation(Operation.formData(msg));
 
     setTimeout(() => {
@@ -50,13 +50,16 @@ io.on("connection", (socket) => {
     }, 1000);
     setTimeout(() => {
       // 回复ack
-      socket.emit("serverAck", toEmit);
+      socket.emit("serverAck", toEmit.operation);
     }, 1000);
   });
 
   socket.on("changeDocTitle", (msg) => {
     otServer.setDocumentTitle(msg);
-    socket.broadcast.emit("changeDocTitle", msg);
+    socket.broadcast.emit("changeDocTitle", {
+      title: msg,
+      lastModified: otServer.getLastModified(),
+    });
   });
 
   // 远端用户选择，广播给其他用户

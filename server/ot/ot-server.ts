@@ -102,6 +102,13 @@ export class OTServer {
   }
   setDocumentTitle(title: string) {
     this.document.title = title;
+    this.updateLastModified();
+  }
+  getLastModified() {
+    return this.document.lastModified;
+  }
+  updateLastModified() {
+    this.document.lastModified = Date.now();
   }
   // 接受文档内容op
   receiveOperation(rawOperation: Operation) {
@@ -127,10 +134,10 @@ export class OTServer {
     this.operations.push(operation);
     // 更新文档内容
     this.document.content = this.slate.children;
-    this.document.lastModified = Date.now();
+    this.updateLastModified();
     this.document.version = operation.targetVersion;
 
-    return operation;
+    return { operation, lastModified: this.document.lastModified };
   }
   transformOp(op: Operation) {
     // op是来自客户端的，它是在服务端op之后执行的

@@ -22,18 +22,6 @@ export class Client {
     this.inited = false;
     this.socketAdaptor = new SocketAdaptor(socket);
 
-    // 处理applyServer
-    this.handleApplyServer = (operationData: Operation) => {
-      // 需要用箭头函数包裹，否则this会指向socketAdaptor
-      // 当收到服务端op时，将data转换为Operation
-      const operation = Operation.formData(operationData);
-      this.applyServer(operation);
-    };
-    this.socketAdaptor.resigterAction<Operation>(
-      "applyServer",
-      this.handleApplyServer
-    );
-
     // 处理serverAck
     this.handleServerAck = () => {
       this.serverAck();
@@ -45,17 +33,14 @@ export class Client {
 
     this.editorAdaptor = new EditorAdaptor(editorAdaptor);
   }
-  handleApplyServer;
+
   handleServerAck;
   isAlive() {
     return this.socketAdaptor.isAlive();
   }
   destroy() {
     this.socketAdaptor.destroy();
-    this.socketAdaptor.offAction<Operation>(
-      "applyServer",
-      this.handleApplyServer
-    );
+
     this.socketAdaptor.offAction<Operation>("serverAck", this.handleServerAck);
   }
   setState(state: Synchronized | AwaitingConfirm | AwaitingWithBuffer) {
@@ -71,7 +56,7 @@ export class Client {
       this.inited = true;
       // this.setRevision(operation.targetVersion); // 也不需要更新版本
       console.log("applyClient --- init document >>> version", this.revision);
-      return;
+      return true; // init
     }
 
     // 本地版本更新

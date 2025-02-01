@@ -30,6 +30,7 @@ import {
   Document,
   initDocument,
   changeDocumentTitle,
+  updateLastModified,
 } from "../../store/docSlice";
 import { Client, Operation } from "../../lib/ot";
 import { CommentBar } from "./CommentBar/CommentBar";
@@ -158,6 +159,23 @@ export function EditorContent() {
   useEffect(() => {
     const client = new Client(editor, getSocket());
 
+    // 注册applyServer处理
+    const handleApplyServer = ({
+      operation,
+      lastModified,
+    }: {
+      operation: Operation;
+      lastModified: number;
+    }) => {
+      const operationData = Operation.formData(operation);
+      client.applyServer(operationData);
+      dispatch(updateLastModified({ lastModified }));
+    };
+    client.socketAdaptor.resigterAction<{
+      operation: Operation;
+      lastModified: number;
+    }>("applyServer", handleApplyServer);
+
     // 注册socket处理 更新用户数量
     const handleUpdateUserCount = (res: { data: [string, OTClient][] }) => {
       const userList = res.data;
@@ -271,7 +289,13 @@ export function EditorContent() {
         });
         // history多出的部分，可能是来自applyServer
         if (newOps.length > 0) {
-          client.applyClient(new Operation([...newOps], client.revision));
+          const init = client.applyClient(
+            new Operation([...newOps], client.revision)
+          );
+          if (!init) {
+            // 更新lastModified
+            dispatch(updateLastModified({ lastModified: Date.now() }));
+          }
         }
       }
 
@@ -281,6 +305,12 @@ export function EditorContent() {
 
     return () => {
       client.destroy();
+
+      client.socketAdaptor.offAction<{
+        operation: Operation;
+        lastModified: number;
+      }>("applyServer", handleApplyServer);
+
       client.socketAdaptor.offAction<{ data: [string, OTClient][] }>(
         "updateUserCount",
         handleUpdateUserCount
@@ -302,8 +332,15 @@ export function EditorContent() {
 
   useEffect(() => {
     const socket = getSocket();
-    const handleChangeDocTitle = (title: string) => {
-      dispatch(changeDocumentTitle({ title: title }));
+    const handleChangeDocTitle = ({
+      title,
+      lastModified,
+    }: {
+      title: string;
+      lastModified: number;
+    }) => {
+      dispatch(changeDocumentTitle({ title }));
+      dispatch(updateLastModified({ lastModified }));
     };
     socket.on("changeDocTitle", handleChangeDocTitle);
 
