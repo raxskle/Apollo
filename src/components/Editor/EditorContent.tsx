@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "./EditorContent.scss";
 import { OTClient } from "../../../server/ot/index";
 import {
@@ -32,7 +32,7 @@ import {
   changeDocumentTitle,
   updateLastModified,
 } from "../../store/docSlice";
-import { Client, Operation } from "../../lib/ot";
+import { getClient, Operation } from "../../lib/ot";
 import { CommentBar } from "./CommentBar/CommentBar";
 import { getSocket } from "../../network";
 import { RemoteSelection, useRemoteSelection } from "./useRemoteSelection";
@@ -145,7 +145,8 @@ export function EditorContent() {
   const document = useSelector((state: RootState) => state.doc.document);
   const dispatch = useDispatch();
 
-  const { decorate, setRemoteSelections } = useRemoteSelection();
+  const { decorate, setRemoteSelections, transformSelection } =
+    useRemoteSelection();
 
   const renderElement = useCallback(
     (props: RenderElementProps) => <ElementWithAddBar elementProps={props} />,
@@ -156,8 +157,10 @@ export function EditorContent() {
     return <Leaf {...props} />;
   }, []);
 
+  const [operations, setOperations] = useState<SlateOperation[]>([]);
+
   useEffect(() => {
-    const client = new Client(editor, getSocket());
+    const client = getClient(editor);
 
     // 注册applyServer处理
     const handleApplyServer = ({
@@ -170,6 +173,9 @@ export function EditorContent() {
       const operationData = Operation.formData(operation);
       client.applyServer(operationData);
       dispatch(updateLastModified({ lastModified }));
+
+      // 处理光标
+      transformSelection(operationData);
     };
     client.socketAdaptor.resigterAction<{
       operation: Operation;
@@ -237,7 +243,7 @@ export function EditorContent() {
     );
 
     // 监听editor的变化
-    let operations: SlateOperation[] = [];
+
     const rawOnChange = editor.onChange;
     editor.onChange = (options?: { operation?: SlateOperation }) => {
       rawOnChange.call(editor, options);
@@ -300,12 +306,10 @@ export function EditorContent() {
       }
 
       // 更新记录
-      operations = history;
+      setOperations(history);
     };
 
     return () => {
-      client.destroy();
-
       client.socketAdaptor.offAction<{
         operation: Operation;
         lastModified: number;
@@ -328,7 +332,7 @@ export function EditorContent() {
       // 取消监听
       editor.onChange = rawOnChange;
     };
-  }, [editor, dispatch, setRemoteSelections]);
+  }, [editor, dispatch, setRemoteSelections, transformSelection, operations]);
 
   useEffect(() => {
     const socket = getSocket();
