@@ -7,6 +7,7 @@ import { ParagraphElement } from "./ParagraphElement/ParagraphElement";
 import { ImageElement } from "./ImageElement/ImageElement";
 import { NumberedListElement } from "./NumberedListElement/NumberedListElement";
 import { ListItemElement } from "./ListItemElement/ListItemElement";
+import { BulletedListElement } from "./BulletedListElement/BulletedListElement";
 
 export const Element = (props: RenderElementProps) => {
   switch (props.element.type) {
@@ -26,6 +27,8 @@ export const Element = (props: RenderElementProps) => {
       return <ImageElement {...props} />;
     case "numbered-list":
       return <NumberedListElement {...props} />;
+    case "bulleted-list":
+      return <BulletedListElement {...props} />;
     case "list-item":
       return <ListItemElement {...props} />;
     case "paragraph":

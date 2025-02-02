@@ -76,6 +76,11 @@ export type NumberedListElement = {
   children: ListItemElement[];
 };
 
+export type BulletedListElement = {
+  type: "bulleted-list";
+  children: ListItemElement[];
+};
+
 export type ListItemElement = {
   type: "list-item";
   children: CustomText[];
@@ -89,6 +94,7 @@ export type CustomElement =
   | CheckListItemElement
   | ImageElement
   | NumberedListElement
+  | BulletedListElement
   | ListItemElement;
 
 export type CustomOperation = BaseOperation & {

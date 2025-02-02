@@ -77,6 +77,8 @@ export const SelectButton: FC<{
           return "Check List";
         case "numbered-list":
           return "Numbered List";
+        case "bulleted-list":
+          return "Bulleted List";
         default:
           return text;
       }
@@ -95,7 +97,6 @@ export const SelectButton: FC<{
     try {
       marks = Editor.marks(editor);
     } catch {
-      console.log("Editor.marks执行失败了", editor.selection);
       Transforms.select(editor, {
         anchor: { path: editor.selection.anchor.path.concat([0]), offset: 0 },
         focus: { path: editor.selection.focus.path.concat([0]), offset: 0 },
@@ -116,7 +117,6 @@ export const SelectButton: FC<{
     try {
       marks = Editor.marks(editor);
     } catch {
-      console.log("Editor.marks执行失败了", editor.selection);
       Transforms.select(editor, {
         anchor: { path: editor.selection.anchor.path.concat([0]), offset: 0 },
         focus: { path: editor.selection.focus.path.concat([0]), offset: 0 },

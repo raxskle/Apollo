@@ -81,4 +81,12 @@ export const ElementDataList: ElementData[] = [
       children: [{ type: "list-item", children: [{ text: "" }] }],
     },
   },
+  {
+    type: "bulleted-list",
+    displayName: "Bulleted List",
+    defaultData: {
+      type: "bulleted-list",
+      children: [{ type: "list-item", children: [{ text: "" }] }],
+    },
+  },
 ];

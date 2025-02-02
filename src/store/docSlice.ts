@@ -107,11 +107,24 @@ export const initialContent: CustomElement[] | Descendant[] = [
     children: [
       {
         type: "list-item",
-        children: [{ text: "this is a numbered list item 1." }],
+        children: [{ text: "this is a numbered list item 1" }],
       },
       {
         type: "list-item",
-        children: [{ text: "this is a numbered list item 2." }],
+        children: [{ text: "this is a numbered list item 2" }],
+      },
+    ],
+  },
+  {
+    type: "bulleted-list",
+    children: [
+      {
+        type: "list-item",
+        children: [{ text: "this is a bulleted list item 1" }],
+      },
+      {
+        type: "list-item",
+        children: [{ text: "this is a bulleted list item 2" }],
       },
     ],
   },

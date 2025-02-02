@@ -1,15 +1,13 @@
-import "./NumberedListElement.scss";
-
 import { RenderElementProps } from "slate-react";
 
-export const NumberedListElement = (props: RenderElementProps) => {
+export const BulletedListElement = (props: RenderElementProps) => {
   const { element, attributes, children } = props;
 
-  if (element.type !== "numbered-list") {
+  if (element.type !== "bulleted-list") {
     return <div>类型出错</div>;
   }
   return (
-    <ol
+    <ul
       {...attributes}
       style={{
         paddingLeft: "20px",
@@ -20,6 +18,6 @@ export const NumberedListElement = (props: RenderElementProps) => {
       }}
     >
       {children}
-    </ol>
+    </ul>
   );
 };

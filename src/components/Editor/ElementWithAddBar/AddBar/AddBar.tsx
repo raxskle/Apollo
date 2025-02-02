@@ -14,6 +14,7 @@ import { QuoteElementIcon } from "../../../../assets/icons/element-icons/QuoteEl
 import { CheckListElementIcon } from "../../../../assets/icons/element-icons/CheckListElementIcon";
 import { ImageElementIcon } from "../../../../assets/icons/element-icons/ImageElementIcon";
 import { NumberedListElementIcon } from "../../../../assets/icons/element-icons/NumberedListElementIcon";
+import { BulletedListElementIcon } from "../../../../assets/icons/element-icons/BulletedListElementIcon";
 
 interface AddBarProps {
   element: CustomElement;
@@ -139,6 +140,8 @@ const ElementIconMapping = (type: string, style: SVGProps<SVGSVGElement>) => {
       return <TextElementIcon {...style} />;
     case "numbered-list":
       return <NumberedListElementIcon {...style} />;
+    case "bulleted-list":
+      return <BulletedListElementIcon {...style} />;
     default:
       return <TextElementIcon {...style} />;
   }
