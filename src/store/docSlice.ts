@@ -88,7 +88,7 @@ export const initialContent: CustomElement[] | Descendant[] = [
     align: AlignType.Center,
     children: [
       { text: "This is editable ", bold: true },
-      { text: "code", type: "code" },
+      { text: "code", code: true },
       { text: " text, just like a <textarea>!" },
     ],
   },
