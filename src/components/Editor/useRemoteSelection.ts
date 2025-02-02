@@ -148,9 +148,13 @@ export const useRemoteSelection = () => {
               // 前面分裂
               selection.focus.path[0]++;
             } else if (isParent(selection.focus.path, action.path)) {
-              // 该节点的父节点分裂，父节点+1，子节点-action.position
-              selection.focus.path[0]++;
-              selection.focus.path[1] -= action.position;
+              // 该节点的父节点向下分裂
+              if (action.position <= selection.focus.path[1]) {
+                // 该节点的父节点向下分裂，且分裂位置在该节点之前，父节点+1，子节点-action.position
+                selection.focus.path[0]++;
+                selection.focus.path[1] -= action.position;
+              }
+              // 否则该节点不用动
             }
           } else if (
             isBeforeAndSameSibling(selection.focus.path, action.path)
@@ -167,6 +171,7 @@ export const useRemoteSelection = () => {
             }
           }
         }
+        console.log("selection>>>>>>>", selection);
       });
       console.log("new selection!!!!!!!!", selection);
       if (!selection) {

@@ -258,7 +258,7 @@ export function EditorContent() {
           return item.operations;
         })
         .flat(1);
-      console.log(">>>>>>>>>>editor history", history);
+      console.log("editor history >>>>>>>>>>", history);
 
       // 根据实际应用的op更新remoteSelection光标
       if (history.length >= operations.length) {
@@ -318,9 +318,6 @@ export function EditorContent() {
           }
         }
       }
-
-      // // 更新记录
-      // setOperations(history);
     };
 
     return () => {
