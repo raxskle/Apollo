@@ -103,6 +103,10 @@ export const initialContent: CustomElement[] | Descendant[] = [
     children: [{ text: "Enjoy the world" }],
   },
   {
+    type: "divider",
+    children: [{ text: "" }],
+  },
+  {
     type: "numbered-list",
     children: [
       {

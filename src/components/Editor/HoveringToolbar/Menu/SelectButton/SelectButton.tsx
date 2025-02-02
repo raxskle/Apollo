@@ -7,7 +7,7 @@ import { Editor, Element, Transforms } from "slate";
 import { Select } from "../../../../../assets/icons/Select";
 import { SketchPicker } from "react-color";
 import { ElementDataList } from "../../../ElementDataList";
-import { CustomElement } from "../../../../../types/editor";
+import { CustomElement, CustomText } from "../../../../../types/editor";
 
 export const Button = React.forwardRef(
   ({ className, reversed, ...props }: any, ref: Ref<HTMLSpanElement>) => (
@@ -79,6 +79,8 @@ export const SelectButton: FC<{
           return "Numbered List";
         case "bulleted-list":
           return "Bulleted List";
+        case "divider":
+          return "Divider";
         default:
           return text;
       }
@@ -231,7 +233,7 @@ const ContentTypeMenu = () => {
 
   const handleClick = (props: {
     type: string;
-    [key: string]: string | boolean | number | CustomElement[];
+    [key: string]: string | boolean | number | CustomElement[] | CustomText[];
   }) => {
     // 检查当前节点是否存在并且是一个元素节点
     // 将其转换为type

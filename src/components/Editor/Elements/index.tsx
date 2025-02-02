@@ -8,6 +8,7 @@ import { ImageElement } from "./ImageElement/ImageElement";
 import { NumberedListElement } from "./NumberedListElement/NumberedListElement";
 import { ListItemElement } from "./ListItemElement/ListItemElement";
 import { BulletedListElement } from "./BulletedListElement/BulletedListElement";
+import { DividerElement } from "./DividerElement/DividerElement";
 
 export const Element = (props: RenderElementProps) => {
   switch (props.element.type) {
@@ -31,6 +32,8 @@ export const Element = (props: RenderElementProps) => {
       return <BulletedListElement {...props} />;
     case "list-item":
       return <ListItemElement {...props} />;
+    case "divider":
+      return <DividerElement {...props} />;
     case "paragraph":
     default:
       return <ParagraphElement {...props} />;

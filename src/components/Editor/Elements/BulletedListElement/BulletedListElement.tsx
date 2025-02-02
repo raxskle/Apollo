@@ -1,7 +1,16 @@
-import { RenderElementProps } from "slate-react";
+import { Transforms } from "slate";
+import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 
 export const BulletedListElement = (props: RenderElementProps) => {
   const { element, attributes, children } = props;
+  const editor = useSlateStatic();
+
+  if (element.children.length === 0) {
+    const nodePath = ReactEditor.findPath(editor, element);
+    Transforms.removeNodes(editor, { at: nodePath });
+
+    return;
+  }
 
   if (element.type !== "bulleted-list") {
     return <div>类型出错</div>;

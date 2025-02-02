@@ -86,6 +86,11 @@ export type ListItemElement = {
   children: CustomText[];
 };
 
+export type DividerElement = {
+  type: "divider";
+  children: CustomText[]; // 占位
+};
+
 export type CustomElement =
   | ParagraphElement
   | HeadingElement
@@ -95,7 +100,8 @@ export type CustomElement =
   | ImageElement
   | NumberedListElement
   | BulletedListElement
-  | ListItemElement;
+  | ListItemElement
+  | DividerElement;
 
 export type CustomOperation = BaseOperation & {
   applyServer?: boolean;

@@ -1,7 +1,8 @@
 import "./ListItemElement.scss";
-import { Path } from "slate";
+import { Path, Transforms } from "slate";
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 import { isCustomText } from "../../../../types/editor";
+import { useEffect } from "react";
 
 export const ListItemElement = (props: RenderElementProps) => {
   const { element } = props;
@@ -21,9 +22,17 @@ export const ListItemElement = (props: RenderElementProps) => {
     editor.selection.anchor.offset === editor.selection.focus.offset &&
     Path.isAncestor(path, editor.selection?.anchor.path);
 
+  useEffect(() => {
+    // 列表第一项删除后，外层元素会被意外删除掉，path掉到顶层，需要手动清除
+    if (path.length === 1 && element.type === "list-item") {
+      Transforms.removeNodes(editor, { at: path });
+    }
+  });
+
   if (props.element.type !== "list-item") {
     return <div>类型出错</div>;
   }
+
   return (
     <li
       {...props.attributes}

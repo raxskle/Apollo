@@ -1,11 +1,11 @@
-import { AlignType, CustomElement } from "../../types/editor";
+import { AlignType, CustomElement, CustomText } from "../../types/editor";
 
 type ElementData = {
   type: string;
   displayName: string;
   defaultData: { type: string } & Record<
     string,
-    string | number | boolean | CustomElement[]
+    string | number | boolean | CustomElement[] | CustomText[]
   >;
 };
 
@@ -87,6 +87,14 @@ export const ElementDataList: ElementData[] = [
     defaultData: {
       type: "bulleted-list",
       children: [{ type: "list-item", children: [{ text: "" }] }],
+    },
+  },
+  {
+    type: "divider",
+    displayName: "Divider",
+    defaultData: {
+      type: "divider",
+      children: [{ text: "" }],
     },
   },
 ];

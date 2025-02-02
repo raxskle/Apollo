@@ -4,9 +4,14 @@
   margin-top: 8px;
   margin-bottom: 8px;
   transition: all 0.2s ease;
+  position: relative;
 
   .image-element-hide-children {
-    display: none;
+    // display: none;
+    position: absolute;
+    visibility: hidden;
+    height: 0px;
+    width: 0px;
   }
 
   .upload-image-btn {

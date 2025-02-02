@@ -1,6 +1,6 @@
 import "./AddBar.scss";
 import AddIcon from "../../../../assets/icons/add.svg";
-import { CustomElement } from "../../../../types/editor";
+import { CustomElement, CustomText } from "../../../../types/editor";
 import { ReactEditor, useSlate } from "slate-react";
 import { Path, Transforms } from "slate";
 import { SVGProps, useState } from "react";
@@ -15,6 +15,7 @@ import { CheckListElementIcon } from "../../../../assets/icons/element-icons/Che
 import { ImageElementIcon } from "../../../../assets/icons/element-icons/ImageElementIcon";
 import { NumberedListElementIcon } from "../../../../assets/icons/element-icons/NumberedListElementIcon";
 import { BulletedListElementIcon } from "../../../../assets/icons/element-icons/BulletedListElementIcon";
+import { DividerElementIcon } from "../../../../assets/icons/element-icons/DividerElementIcon";
 
 interface AddBarProps {
   element: CustomElement;
@@ -32,7 +33,7 @@ export const AddBar = (props: AddBarProps) => {
 
   const addElement = (props: {
     type: string;
-    [key: string]: string | boolean | number | CustomElement[];
+    [key: string]: string | boolean | number | CustomElement[] | CustomText[];
   }) => {
     // 插入对应type元素
     const targetPath = ReactEditor.findPath(editor, element);
@@ -45,13 +46,13 @@ export const AddBar = (props: AddBarProps) => {
     Transforms.insertNodes(editor, elementToInsert, { at: insertPath });
 
     // 🔥 关键步骤：将选区移动到列表项的文本节点
-    const listItemPath = insertPath.concat([0, 0]); // 根据实际插入位置调整路径
-    console.log("insertNOde>>>>>>>", listItemPath);
-    Transforms.select(editor, {
-      anchor: { path: listItemPath, offset: 0 },
-      focus: { path: listItemPath, offset: 0 },
-    });
-    console.log("editor.selection>>>>>>>", editor.selection);
+    // const listItemPath = insertPath; // 根据实际插入位置调整路径
+    // console.log("insertNOde>>>>>>>", listItemPath);
+    // Transforms.select(editor, {
+    //   anchor: { path: listItemPath, offset: 0 },
+    //   focus: { path: listItemPath, offset: 0 },
+    // });
+    // console.log("editor.selection>>>>>>>", editor.selection);
 
     // 关闭add menu
     setOpen(false);
@@ -142,6 +143,8 @@ const ElementIconMapping = (type: string, style: SVGProps<SVGSVGElement>) => {
       return <NumberedListElementIcon {...style} />;
     case "bulleted-list":
       return <BulletedListElementIcon {...style} />;
+    case "divider":
+      return <DividerElementIcon {...style} />;
     default:
       return <TextElementIcon {...style} />;
   }
