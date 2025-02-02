@@ -5,6 +5,8 @@ import { BlockQuoteElement } from "./BlockQuoteElement/BlockQuoteElement";
 import { CheckListItemElement } from "./CheckListItemElement/CheckListItemElement";
 import { ParagraphElement } from "./ParagraphElement/ParagraphElement";
 import { ImageElement } from "./ImageElement/ImageElement";
+import { NumberedListElement } from "./NumberedListElement/NumberedListElement";
+import { ListItemElement } from "./ListItemElement/ListItemElement";
 
 export const Element = (props: RenderElementProps) => {
   switch (props.element.type) {
@@ -22,6 +24,10 @@ export const Element = (props: RenderElementProps) => {
       return <CheckListItemElement {...props} />;
     case "image":
       return <ImageElement {...props} />;
+    case "numbered-list":
+      return <NumberedListElement {...props} />;
+    case "list-item":
+      return <ListItemElement {...props} />;
     case "paragraph":
     default:
       return <ParagraphElement {...props} />;

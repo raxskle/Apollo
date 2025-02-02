@@ -1,12 +1,15 @@
 import { Path } from "slate";
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
+import { isCustomText } from "../../../../types/editor";
 
 export const BlockQuoteElement = (props: RenderElementProps) => {
   const { element } = props;
   const editor = useSlateStatic();
   const empty =
     element.children.length === 0 ||
-    (element.children.length === 1 && element.children[0].text.length === 0);
+    (element.children.length === 1 &&
+      isCustomText(element.children[0]) &&
+      element.children[0].text.length === 0);
 
   // 判断元素是否被选中
   const path = ReactEditor.findPath(editor, element);

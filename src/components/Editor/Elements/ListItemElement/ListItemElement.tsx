@@ -1,17 +1,16 @@
+import "./ListItemElement.scss";
 import { Path } from "slate";
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 import { isCustomText } from "../../../../types/editor";
 
-export const ParagraphElement = (props: RenderElementProps) => {
-  const { attributes, element, children } = props;
-
+export const ListItemElement = (props: RenderElementProps) => {
+  const { element } = props;
+  const editor = useSlateStatic();
   const empty =
     element.children.length === 0 ||
     (element.children.length === 1 &&
       isCustomText(element.children[0]) &&
       element.children[0].text.length === 0);
-
-  const editor = useSlateStatic();
 
   // 判断元素是否被选中
   const path = ReactEditor.findPath(editor, element);
@@ -22,40 +21,41 @@ export const ParagraphElement = (props: RenderElementProps) => {
     editor.selection.anchor.offset === editor.selection.focus.offset &&
     Path.isAncestor(path, editor.selection?.anchor.path);
 
-  if (element.type !== "paragraph") {
+  if (props.element.type !== "list-item") {
     return <div>类型出错</div>;
   }
   return (
-    <p
-      {...attributes}
+    <li
+      {...props.attributes}
       style={{
-        position: "relative",
-        fontSize: "16px",
-        padding: "4px 0px",
+        textWrap: "wrap",
+        padding: "2px",
         margin: "0px",
-        textAlign: element.align,
+        fontSize: "16px",
+        position: "relative",
       }}
     >
-      {children}
+      {props.children}
       {empty && isSelected && (
         <span
           className="empty-placeholder"
           contentEditable="false"
           style={{
+            padding: "2px",
             userSelect: "none",
             pointerEvents: "none",
             position: "absolute",
             top: "0px",
             left: "0px",
             fontSize: "16px",
-            padding: "4px 0px",
-            margin: "0px",
+            textWrap: "nowrap",
+            fontWeight: "normal",
             color: "rgba(180, 180, 180, 0.6)",
           }}
         >
-          Enter text...
+          Numbered list...
         </span>
       )}
-    </p>
+    </li>
   );
 };

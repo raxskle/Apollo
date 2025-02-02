@@ -7,6 +7,7 @@ import { Editor, Element, Transforms } from "slate";
 import { Select } from "../../../../../assets/icons/Select";
 import { SketchPicker } from "react-color";
 import { ElementDataList } from "../../../ElementDataList";
+import { CustomElement } from "../../../../../types/editor";
 
 export const Button = React.forwardRef(
   ({ className, reversed, ...props }: any, ref: Ref<HTMLSpanElement>) => (
@@ -74,6 +75,8 @@ export const SelectButton: FC<{
           return "Code";
         case "check-list-item":
           return "Check List";
+        case "numbered-list":
+          return "Numbered List";
         default:
           return text;
       }
@@ -84,13 +87,43 @@ export const SelectButton: FC<{
 
   const getTextColor = () => {
     // 获取当前文字的颜色
-    const marks = Editor.marks(editor);
+    if (!editor.selection) {
+      return "black";
+    }
+
+    let marks;
+    try {
+      marks = Editor.marks(editor);
+    } catch {
+      console.log("Editor.marks执行失败了", editor.selection);
+      Transforms.select(editor, {
+        anchor: { path: editor.selection.anchor.path.concat([0]), offset: 0 },
+        focus: { path: editor.selection.focus.path.concat([0]), offset: 0 },
+      });
+      marks = Editor.marks(editor);
+    }
+
     return marks?.color;
   };
 
   const getTextBgColor = () => {
     // 获取当前文字的背景颜色
-    const marks = Editor.marks(editor);
+    if (!editor.selection) {
+      return "black";
+    }
+
+    let marks;
+    try {
+      marks = Editor.marks(editor);
+    } catch {
+      console.log("Editor.marks执行失败了", editor.selection);
+      Transforms.select(editor, {
+        anchor: { path: editor.selection.anchor.path.concat([0]), offset: 0 },
+        focus: { path: editor.selection.focus.path.concat([0]), offset: 0 },
+      });
+      marks = Editor.marks(editor);
+    }
+
     return marks?.backgroundColor;
   };
 
@@ -198,7 +231,7 @@ const ContentTypeMenu = () => {
 
   const handleClick = (props: {
     type: string;
-    [key: string]: string | boolean | number;
+    [key: string]: string | boolean | number | CustomElement[];
   }) => {
     // 检查当前节点是否存在并且是一个元素节点
     // 将其转换为type

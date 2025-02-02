@@ -1,11 +1,16 @@
 import { Operation as SlateOperation } from "slate";
 import { CustomOperation } from "../../types/editor";
 import {
+  ancestor,
   arePathsEqual,
   copy,
+  isAncestor,
+  isBeforeAndSameAncestor,
   isBeforeAndSameParent,
   isBeforeAndSameSibling,
   isParent,
+  parent,
+  sibling,
 } from "./utils";
 
 export class Operation {
@@ -75,7 +80,6 @@ export class Operation {
 
           const newOp1 = copy(op1);
           const newOp2 = copy(op2, { offset: newOffset });
-          console.log("@@@@@@@ newOp2", op1, op2, newOp2);
           return [newOp1, newOp2];
         } else {
           // op1的位置在op2的后面
@@ -83,7 +87,6 @@ export class Operation {
 
           const newOp1 = copy(op1, { offset: newOffset });
           const newOp2 = copy(op2);
-          console.log("@@@@@@@ newOp1", op1, op2, newOp1);
           return [newOp1, newOp2];
         }
       }
@@ -95,7 +98,6 @@ export class Operation {
 
           const newOp1 = copy(op1);
           const newOp2 = copy(op2, { offset: newOffset });
-          console.log("@@@@@@@ newOp1", op1, op2, newOp1);
           return [newOp1, newOp2];
         } else {
           // op1位置移后
@@ -103,35 +105,49 @@ export class Operation {
 
           const newOp1 = copy(op1, { offset: newOffset });
           const newOp2 = copy(op2);
-          console.log("@@@@@@@ newOp1", op1, op2, newOp1);
           return [newOp1, newOp2];
         }
       }
     } else if (op1.type === "insert_text" && op2.type === "insert_node") {
-      if (isBeforeAndSameParent(op1.path, op2.path)) {
+      if (isBeforeAndSameAncestor(op1.path, op2.path)) {
         const newPath = [...op1.path];
-        newPath[0]++;
+        newPath[ancestor(newPath)]++;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+        const newPath = [...op1.path];
+        newPath[parent(newPath)]++;
 
         const newOp1 = copy(op1, { path: newPath });
         const newOp2 = copy(op2);
         return [newOp1, newOp2];
       } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
         const newPath = [...op1.path];
-        newPath[1]++;
+        newPath[sibling(newPath)]++;
 
         const newOp1 = copy(op1, { path: newPath });
         const newOp2 = copy(op2);
         return [newOp1, newOp2];
       }
     } else if (op1.type === "insert_text" && op2.type === "merge_node") {
-      if (isBeforeAndSameParent(op1.path, op2.path)) {
+      if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+        const newPath = [...op1.path];
+        newPath[ancestor(newPath)]--;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      } else if (isBeforeAndSameParent(op1.path, op2.path)) {
         // 父级节点合并
         const newPath = [...op1.path];
-        newPath[0]--;
-        if (op1.path[0] === op2.path[0]) {
+
+        if (op1.path[parent(op1.path)] === op2.path[sibling(op2.path)]) {
           // 如果是该节点向前合并，子级节点要改变
-          newPath[1] += op2.position;
+          newPath[sibling(newPath)] += op2.position;
         }
+        newPath[parent(newPath)]--;
 
         const newOp1 = copy(op1, { path: newPath });
         const newOp2 = copy(op2);
@@ -139,9 +155,10 @@ export class Operation {
       } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
         // 子级节点合并，offset要改变
         const newPath = [...op1.path];
-        newPath[1]--;
+        newPath[sibling(newPath)]--;
+
         let newOffset = op1.offset;
-        if (op1.path[1] === op2.path[1]) {
+        if (op1.path[sibling(op1.path)] === op2.path[sibling(op2.path)]) {
           // op1该节点向前合并，offset要增加
           newOffset += op2.position;
         }
@@ -153,7 +170,21 @@ export class Operation {
     } else if (op1.type === "insert_text" && op2.type === "move_node") {
       // todo 移动节点
     } else if (op1.type === "insert_text" && op2.type === "remove_node") {
-      if (isBeforeAndSameParent(op1.path, op2.path)) {
+      if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+        if (isAncestor(op1.path, op2.path)) {
+          // op1操作的祖先节点被删除了
+          const newOp1 = copy(op1, { type: "noop" });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else {
+          const newPath = [...op1.path];
+          newPath[ancestor(newPath)]--;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
+      } else if (isBeforeAndSameParent(op1.path, op2.path)) {
         if (isParent(op1.path, op2.path)) {
           // op1操作的节点被删除了
           const newOp1 = copy(op1, { type: "noop" });
@@ -162,7 +193,7 @@ export class Operation {
         } else {
           // 前面的节点被删除
           const newPath = [...op1.path];
-          newPath[0]--;
+          newPath[parent(newPath)]--;
 
           const newOp1 = copy(op1, { path: newPath });
           const newOp2 = copy(op2);
@@ -177,7 +208,7 @@ export class Operation {
         } else {
           // 前面的子级节点被删除
           const newPath = [...op1.path];
-          newPath[1]--;
+          newPath[sibling(newPath)]--;
 
           const newOp1 = copy(op1, { path: newPath });
           const newOp2 = copy(op2);
@@ -187,37 +218,44 @@ export class Operation {
     } else if (op1.type === "insert_text" && op2.type === "set_node") {
       // 看似无冲突
     } else if (op1.type === "insert_text" && op2.type === "split_node") {
-      if (isBeforeAndSameParent(op1.path, op2.path)) {
+      if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+        // 祖先节点分割，不存在祖先将父级分割到后面，所以只可能是前面的祖先
+        const newPath = [...op1.path];
+        newPath[ancestor(newPath)]++;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      } else if (isBeforeAndSameParent(op1.path, op2.path)) {
         if (!isParent(op1.path, op2.path)) {
           //  前面的父级节点分裂
           const newPath = [...op1.path];
-          newPath[0]++;
+          newPath[parent(newPath)]++;
 
           const newOp1 = copy(op1, { path: newPath });
           const newOp2 = copy(op2);
           return [newOp1, newOp2];
         } else if (isParent(op1.path, op2.path)) {
           // 该节点的父节点分裂
-          if (op2.position <= op1.path[1]) {
+          if (op2.position <= op1.path[sibling(op1.path)]) {
             // 该节点的父节点向下分裂，且分裂位置在该节点之前，父节点+1，子节点-action.position
             const newPath = [...op1.path];
-            newPath[0]++;
-            newPath[1] -= op2.position;
+            newPath[parent(newPath)]++;
+            newPath[sibling(newPath)] -= op2.position;
 
             const newOp1 = copy(op1, { path: newPath });
             const newOp2 = copy(op2);
             return [newOp1, newOp2];
           }
-          // 否则该节点不用动
+          // 否则不影响
         }
       } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
-        // 子级节点分裂
         if (arePathsEqual(op1.path, op2.path)) {
           // 该节点分裂
           if (op1.offset >= op2.position) {
             // 在该节点前分裂
             const newPath = [...op1.path];
-            newPath[1]++;
+            newPath[sibling(newPath)]++;
 
             let newOffset = op1.offset;
             newOffset -= op2.position;
@@ -225,16 +263,24 @@ export class Operation {
             const newOp1 = copy(op1, { path: newPath, offset: newOffset });
             const newOp2 = copy(op2);
             return [newOp1, newOp2];
+          } else {
+            // 在insert_text的offset后分割
+            // 这里逻辑和selection不同，split_node的position要移后
+            const newPosition = op2.position + op1.text.length;
+            const newOp1 = copy(op1);
+            const newOp2 = copy(op2, { position: newPosition });
+            return [newOp1, newOp2];
           }
         } else {
-          // 前面的节点分裂
+          // 前面的节点分割
           const newPath = [...op1.path];
-          newPath[1]++;
+          newPath[sibling(newPath)]++;
 
           const newOp1 = copy(op1, { path: newPath });
           const newOp2 = copy(op2);
           return [newOp1, newOp2];
         }
+        // insert_text的后面sibling节点分割，无冲突
       }
     } else if (op1.type === "remove_text" && op2.type === "insert_text") {
       //

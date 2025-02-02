@@ -13,6 +13,7 @@ import { CodeElementIcon } from "../../../../assets/icons/element-icons/CodeElem
 import { QuoteElementIcon } from "../../../../assets/icons/element-icons/QuoteElementIcon";
 import { CheckListElementIcon } from "../../../../assets/icons/element-icons/CheckListElementIcon";
 import { ImageElementIcon } from "../../../../assets/icons/element-icons/ImageElementIcon";
+import { NumberedListElementIcon } from "../../../../assets/icons/element-icons/NumberedListElementIcon";
 
 interface AddBarProps {
   element: CustomElement;
@@ -30,16 +31,27 @@ export const AddBar = (props: AddBarProps) => {
 
   const addElement = (props: {
     type: string;
-    [key: string]: string | boolean | number;
+    [key: string]: string | boolean | number | CustomElement[];
   }) => {
     // 插入对应type元素
     const targetPath = ReactEditor.findPath(editor, element);
     const insertPath = Path.next(targetPath);
+
     const elementToInsert = {
       children: [{ text: "" }],
       ...props,
     } as CustomElement;
     Transforms.insertNodes(editor, elementToInsert, { at: insertPath });
+
+    // 🔥 关键步骤：将选区移动到列表项的文本节点
+    const listItemPath = insertPath.concat([0, 0]); // 根据实际插入位置调整路径
+    console.log("insertNOde>>>>>>>", listItemPath);
+    Transforms.select(editor, {
+      anchor: { path: listItemPath, offset: 0 },
+      focus: { path: listItemPath, offset: 0 },
+    });
+    console.log("editor.selection>>>>>>>", editor.selection);
+
     // 关闭add menu
     setOpen(false);
     // 设置光标到新插入的节点的第一个子节点
@@ -125,6 +137,8 @@ const ElementIconMapping = (type: string, style: SVGProps<SVGSVGElement>) => {
       return <ImageElementIcon {...style} />;
     case "paragraph":
       return <TextElementIcon {...style} />;
+    case "numbered-list":
+      return <NumberedListElementIcon {...style} />;
     default:
       return <TextElementIcon {...style} />;
   }

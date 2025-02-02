@@ -102,6 +102,19 @@ export const initialContent: CustomElement[] | Descendant[] = [
     align: AlignType.Left,
     children: [{ text: "Enjoy the world" }],
   },
+  {
+    type: "numbered-list",
+    children: [
+      {
+        type: "list-item",
+        children: [{ text: "this is a numbered list item 1." }],
+      },
+      {
+        type: "list-item",
+        children: [{ text: "this is a numbered list item 2." }],
+      },
+    ],
+  },
 ];
 
 const initialState: SystemState = {

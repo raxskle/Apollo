@@ -15,15 +15,23 @@ export function arePathsEqual(pathA: number[], pathB: number[]): boolean {
   return true;
 }
 
-// b是否是a前面的父级节点
+// b是否是a的或者前面的父级节点，同一祖先节点
 export function isBeforeAndSameParent(
   pathA: number[],
   pathB: number[]
 ): boolean {
-  if (pathB.length >= pathA.length) {
-    return false;
+  if (pathA.length === 2 && pathB.length === 1 && pathB[0] <= pathA[0]) {
+    // 两级节点
+    return true;
   }
-  if (pathB[0] <= pathA[0]) {
+
+  if (
+    pathA.length === 3 &&
+    pathB.length === 2 &&
+    pathB[0] === pathA[0] &&
+    pathB[1] <= pathA[1]
+  ) {
+    // 三级节点
     return true;
   }
 
@@ -38,18 +46,101 @@ export function isBeforeAndSameSibling(
   if (pathA.length !== pathB.length) {
     return false;
   }
-  if (pathA[0] !== pathB[0]) {
-    return false;
-  }
-  if (pathB[1] <= pathA[1]) {
+  if (
+    pathA.length === 2 &&
+    pathB.length === 2 &&
+    pathA[0] === pathB[0] &&
+    pathB[1] <= pathA[1]
+  ) {
     return true;
   }
+
+  if (
+    pathA.length === 3 &&
+    pathB.length === 3 &&
+    pathA[0] === pathB[0] &&
+    pathA[1] === pathB[1] &&
+    pathB[2] <= pathA[2]
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+// b是否是a的或者前面的祖先节点
+export function isBeforeAndSameAncestor(pathA: number[], pathB: number[]) {
+  if (pathA.length === 3 && pathB.length === 1 && pathB[0] <= pathA[0]) {
+    return true;
+  }
+
   return false;
 }
 
 // b是否是a的父节点
 export function isParent(pathA: number[], pathB: number[]): boolean {
-  return pathB.length === 1 && pathA.length === 2 && pathB[0] === pathA[0];
+  if (pathB.length === 1 && pathA.length === 2 && pathB[0] === pathA[0]) {
+    return true;
+  }
+
+  if (
+    pathB.length === 2 &&
+    pathA.length === 3 &&
+    pathB[0] === pathA[0] &&
+    pathB[1] === pathA[1]
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+// b是否是a的祖先
+export function isAncestor(pathA: number[], pathB: number[]) {
+  return pathB.length === 1 && pathA.length === 3 && pathB[0] === pathA[0];
+}
+
+// 该元素路径是否是三级的
+export function isLevelThree(path: number[]) {
+  return path.length === 3;
+}
+
+export function isLevelTwo(path: number[]) {
+  return path.length === 2;
+}
+
+export function isLevelOne(path: number[]) {
+  return path.length === 1;
+}
+
+// 返回该路径的父级路径index
+export function parent(path: number[]): number {
+  if (path.length === 2) {
+    return 0;
+  } else if (path.length === 3) {
+    return 1;
+  }
+  throw new Error("path length must be 2 or 3");
+}
+
+// 返回该路径的兄弟路径index
+export function sibling(path: number[]): number {
+  if (path.length === 2) {
+    return 1;
+  } else if (path.length === 3) {
+    return 2;
+  } else {
+    // 根节点
+    return 0;
+  }
+}
+
+// 返回该路径的祖先路径index
+export function ancestor(path: number[]): number {
+  if (path.length === 3) {
+    return 0;
+  }
+  throw new Error("path length must be 3");
 }
 
 export const copy = (

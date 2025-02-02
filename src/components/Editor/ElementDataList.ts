@@ -1,9 +1,12 @@
-import { AlignType } from "../../types/editor";
+import { AlignType, CustomElement } from "../../types/editor";
 
 type ElementData = {
   type: string;
   displayName: string;
-  defaultData: { type: string } & Record<string, string | number | boolean>;
+  defaultData: { type: string } & Record<
+    string,
+    string | number | boolean | CustomElement[]
+  >;
 };
 
 export const ElementDataList: ElementData[] = [
@@ -68,6 +71,14 @@ export const ElementDataList: ElementData[] = [
       url: "",
       alt: "", // 不要给默认的width属性
       align: AlignType.Left,
+    },
+  },
+  {
+    type: "numbered-list",
+    displayName: "Numbered List",
+    defaultData: {
+      type: "numbered-list",
+      children: [{ type: "list-item", children: [{ text: "" }] }],
     },
   },
 ];

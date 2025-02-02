@@ -1,4 +1,4 @@
-import { BaseEditor, BaseOperation, Descendant } from "slate";
+import { BaseEditor, BaseOperation, Descendant, Node } from "slate";
 import { ReactEditor } from "slate-react";
 import { HistoryEditor } from "slate-history";
 
@@ -25,6 +25,12 @@ export type CustomText = {
     userId: string;
     displayColor: string;
   };
+};
+
+export const isCustomText = (
+  node: Node | Descendant | CustomElement
+): node is CustomText => {
+  return "text" in node;
 };
 
 export type ParagraphElement = {
@@ -65,13 +71,25 @@ export type ImageElement = {
   children: CustomText[];
 };
 
+export type NumberedListElement = {
+  type: "numbered-list";
+  children: ListItemElement[];
+};
+
+export type ListItemElement = {
+  type: "list-item";
+  children: CustomText[];
+};
+
 export type CustomElement =
   | ParagraphElement
   | HeadingElement
   | CodeElement
   | blockQuoteElement
   | CheckListItemElement
-  | ImageElement;
+  | ImageElement
+  | NumberedListElement
+  | ListItemElement;
 
 export type CustomOperation = BaseOperation & {
   applyServer?: boolean;

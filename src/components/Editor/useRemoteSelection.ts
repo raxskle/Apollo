@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { BasePoint, Node, NodeEntry, Range } from "slate";
-import { CustomOperation, CustomText } from "../../types/editor";
+import { BasePoint, NodeEntry, Range } from "slate";
+import { CustomOperation, isCustomText } from "../../types/editor";
 
 import {
+  ancestor,
   arePathsEqual,
+  isAncestor,
+  isBeforeAndSameAncestor,
   isBeforeAndSameParent,
   isBeforeAndSameSibling,
   isParent,
+  parent,
+  sibling,
 } from "../../lib/ot/utils";
 import { cloneDeep } from "lodash";
 
@@ -14,10 +19,6 @@ export type RemoteSelection = {
   focus: BasePoint;
   userId: string;
   displayColor: string;
-};
-
-const isCustomText = (node: Node): node is CustomText => {
-  return "text" in node;
 };
 
 export const useRemoteSelection = () => {
@@ -65,19 +66,19 @@ export const useRemoteSelection = () => {
 
   const transformSelection = (operations: CustomOperation[]) => {
     // todo: 修改用户光标
-    console.log("transformSelection>>>>>>>", operations);
+    // console.log("transformSelection>>>>>>>", operations);
     const selections = cloneDeep(remoteSelections);
     Object.keys(remoteSelections).forEach((userId) => {
       let selection: RemoteSelection | null = cloneDeep(
         remoteSelections[userId]
       );
-      console.log("original selection!!!!!!!!", remoteSelections[userId]);
+      // console.log("original selection!!!!!!!!", remoteSelections[userId]);
       // 取出每个selection
 
       operations.forEach((action) => {
         // 对于光标，通过所有operations转换
         // 只需处理action的path和offset在remoteSelection之前的情况
-        if (!selection) {
+        if (!selection || !selection.focus || !selection.focus.path) {
           return;
         }
         if (action.type === "insert_text") {
@@ -97,38 +98,57 @@ export const useRemoteSelection = () => {
             }
           }
         } else if (action.type === "insert_node") {
-          if (isBeforeAndSameParent(selection.focus.path, action.path)) {
-            selection.focus.path[0]++;
+          if (isBeforeAndSameAncestor(selection.focus.path, action.path)) {
+            selection.focus.path[ancestor(selection.focus.path)]++;
+          } else if (isBeforeAndSameParent(selection.focus.path, action.path)) {
+            selection.focus.path[parent(selection.focus.path)]++;
           } else if (
             isBeforeAndSameSibling(selection.focus.path, action.path)
           ) {
-            selection.focus.path[1]++;
+            selection.focus.path[sibling(selection.focus.path)]++;
           }
         } else if (action.type === "merge_node") {
-          if (isBeforeAndSameParent(selection.focus.path, action.path)) {
-            if (selection.focus.path[0] === action.path[0]) {
+          if (isBeforeAndSameAncestor(selection.focus.path, action.path)) {
+            selection.focus.path[ancestor(selection.focus.path)]--;
+          } else if (isBeforeAndSameParent(selection.focus.path, action.path)) {
+            // action是父级节点
+            if (
+              selection.focus.path[parent(selection.focus.path)] ===
+              action.path[sibling(action.path)]
+            ) {
               // 该节点向前合并
-              selection.focus.path[1] += action.position;
+              selection.focus.path[sibling(selection.focus.path)] +=
+                action.position;
             }
-            selection.focus.path[0]--;
+            selection.focus.path[parent(selection.focus.path)]--;
           } else if (
             isBeforeAndSameSibling(selection.focus.path, action.path)
           ) {
-            if (selection.focus.path[1] === action.path[1]) {
+            if (
+              selection.focus.path[sibling(selection.focus.path)] ===
+              action.path[sibling(action.path)]
+            ) {
               // 该节点向前合并
               selection.focus.offset += action.position;
             }
-            selection.focus.path[1]--;
+            selection.focus.path[sibling(selection.focus.path)]--;
           }
         } else if (action.type === "move_node") {
           // todo: 处理移动节点的情况
         } else if (action.type === "remove_node") {
-          if (isBeforeAndSameParent(selection.focus.path, action.path)) {
+          if (isBeforeAndSameAncestor(selection.focus.path, action.path)) {
+            if (isAncestor(selection.focus.path, action.path)) {
+              selection = null;
+            } else {
+              // 前面的祖先
+              selection.focus.path[ancestor(selection.focus.path)]--;
+            }
+          } else if (isBeforeAndSameParent(selection.focus.path, action.path)) {
             if (isParent(selection.focus.path, action.path)) {
               //  该节点被移除
               selection = null;
             } else {
-              selection.focus.path[0]--;
+              selection.focus.path[parent(selection.focus.path)]--;
             }
           } else if (
             isBeforeAndSameSibling(selection.focus.path, action.path)
@@ -137,22 +157,28 @@ export const useRemoteSelection = () => {
               // 该节点被移除
               selection = null;
             } else {
-              selection.focus.path[1]--;
+              selection.focus.path[sibling(selection.focus.path)]--;
             }
           }
         } else if (action.type === "set_node") {
           // 不影响
         } else if (action.type === "split_node") {
-          if (isBeforeAndSameParent(selection.focus.path, action.path)) {
+          if (isBeforeAndSameAncestor(selection.focus.path, action.path)) {
+            selection.focus.path[ancestor(selection.focus.path)]++;
+          } else if (isBeforeAndSameParent(selection.focus.path, action.path)) {
             if (!isParent(selection.focus.path, action.path)) {
               // 前面分裂
-              selection.focus.path[0]++;
+              selection.focus.path[parent(selection.focus.path)]++;
             } else if (isParent(selection.focus.path, action.path)) {
               // 该节点的父节点向下分裂
-              if (action.position <= selection.focus.path[1]) {
+              if (
+                action.position <=
+                selection.focus.path[sibling(selection.focus.path)]
+              ) {
                 // 该节点的父节点向下分裂，且分裂位置在该节点之前，父节点+1，子节点-action.position
-                selection.focus.path[0]++;
-                selection.focus.path[1] -= action.position;
+                selection.focus.path[parent(selection.focus.path)]++;
+                selection.focus.path[sibling(selection.focus.path)] -=
+                  action.position;
               }
               // 否则该节点不用动
             }
@@ -162,18 +188,18 @@ export const useRemoteSelection = () => {
             if (arePathsEqual(selection.focus.path, action.path)) {
               if (selection.focus.offset >= action.position) {
                 // 该节点前面分裂
-                selection.focus.path[1]++;
+                selection.focus.path[sibling(selection.focus.path)]++;
                 selection.focus.offset -= action.position;
               }
             } else {
               // 前面分裂
-              selection.focus.path[1]++;
+              selection.focus.path[sibling(selection.focus.path)]++;
             }
           }
         }
-        console.log("selection>>>>>>>", selection);
+        // console.log("selection>>>>>>>", selection);
       });
-      console.log("new selection!!!!!!!!", selection);
+      // console.log("new selection!!!!!!!!", selection);
       if (!selection) {
         // 清除光标
         delete selections[userId];

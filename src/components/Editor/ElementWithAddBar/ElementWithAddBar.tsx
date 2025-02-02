@@ -13,6 +13,10 @@ export const ElementWithAddBar = (props: ElementWithAddBarType) => {
   const { elementProps } = props;
   const [showAddBar, setShowAddBar] = useState(false);
 
+  if (elementProps.element.type === "list-item") {
+    return <Element {...elementProps} />;
+  }
+
   return (
     <div
       className="element-add-bar-container"
