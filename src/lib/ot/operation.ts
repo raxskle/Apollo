@@ -196,6 +196,15 @@ export class Operation {
           const newOp1 = copy(op1, { path: newPath });
           const newOp2 = copy(op2);
           return [newOp1, newOp2];
+        } else if (isParent(op1.path, op2.path)) {
+          // 该节点的父节点分裂
+          const newPath = [...op1.path];
+          newPath[0]++;
+          newPath[1] -= op2.position;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
         }
       } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
         // 子级节点分裂
@@ -223,6 +232,8 @@ export class Operation {
           return [newOp1, newOp2];
         }
       }
+    } else if (op1.type === "remove_text" && op2.type === "insert_text") {
+      //
     }
 
     return [op1, op2];

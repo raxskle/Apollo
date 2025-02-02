@@ -145,8 +145,12 @@ export function EditorContent() {
   const document = useSelector((state: RootState) => state.doc.document);
   const dispatch = useDispatch();
 
-  const { decorate, setRemoteSelections, transformSelection } =
-    useRemoteSelection();
+  const {
+    decorate,
+    setRemoteSelections,
+    transformSelection,
+    // remoteSelections,
+  } = useRemoteSelection();
 
   const renderElement = useCallback(
     (props: RenderElementProps) => <ElementWithAddBar elementProps={props} />,
@@ -173,9 +177,6 @@ export function EditorContent() {
       const operationData = Operation.formData(operation);
       client.applyServer(operationData);
       dispatch(updateLastModified({ lastModified }));
-
-      // 处理光标
-      transformSelection(operationData);
     };
     client.socketAdaptor.resigterAction<{
       operation: Operation;
@@ -243,7 +244,6 @@ export function EditorContent() {
     );
 
     // 监听editor的变化
-
     const rawOnChange = editor.onChange;
     editor.onChange = (options?: { operation?: SlateOperation }) => {
       rawOnChange.call(editor, options);
@@ -251,13 +251,35 @@ export function EditorContent() {
         console.error("slate change>>>>>>>>>>>>>operation is undefined");
         return;
       }
+
+      // 拿到最新的editor history记录
+      const history = editor.history.undos
+        .map((item) => {
+          return item.operations;
+        })
+        .flat(1);
+      console.log(">>>>>>>>>>editor history", history);
+
+      // 根据实际应用的op更新remoteSelection光标
+      if (history.length >= operations.length) {
+        const newOps = history.slice(operations.length);
+        if (newOps.length > 0) {
+          // 处理光标
+          transformSelection(newOps);
+        }
+      }
+
+      // 更新记录
+      setOperations(history);
+
+      // 应用服务端op
       if (options.operation.applyServer) {
-        // 应用服务端op
+        // 服务端op触发onChange时，直接return，不触发applyClient
         return;
       }
 
       if (options.operation.type === "set_selection") {
-        // 选中
+        // 选中，不作为op发送，通过updateRemoteSelection发送
         const socket = getSocket();
         socket.emit("updateRemoteSelection", {
           focus: options.operation.newProperties?.focus,
@@ -265,15 +287,7 @@ export function EditorContent() {
         return;
       }
 
-      // 拿history的op发送给服务端
-
-      // 拿到history
-      const history = editor.history.undos
-        .map((item) => {
-          return item.operations;
-        })
-        .flat(1);
-      console.log(">>>>>>>>>>history", history);
+      // 拿history的op发送给服务端applyClient
 
       // 如果是撤销
       // todo: 当前 let operations 记录从页面打开开始，撤销时会将其它用户操作撤销掉
@@ -305,8 +319,8 @@ export function EditorContent() {
         }
       }
 
-      // 更新记录
-      setOperations(history);
+      // // 更新记录
+      // setOperations(history);
     };
 
     return () => {
@@ -332,7 +346,7 @@ export function EditorContent() {
       // 取消监听
       editor.onChange = rawOnChange;
     };
-  }, [editor, dispatch, setRemoteSelections, transformSelection, operations]);
+  }, [editor, dispatch, setRemoteSelections, operations, transformSelection]);
 
   useEffect(() => {
     const socket = getSocket();
