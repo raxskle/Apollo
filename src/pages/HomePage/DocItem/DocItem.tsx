@@ -13,6 +13,7 @@ type DocItemProps = {
 function DocItem(props: DocItemProps) {
   const { doc } = props;
   const navigate = useNavigate();
+
   return (
     <div
       className="doc-item"

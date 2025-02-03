@@ -39,9 +39,8 @@ export class Client {
     return this.socketAdaptor.isAlive();
   }
   destroy() {
-    this.socketAdaptor.destroy();
-
     this.socketAdaptor.offAction<Operation>("serverAck", this.handleServerAck);
+    this.socketAdaptor.destroy();
   }
   setState(state: Synchronized | AwaitingConfirm | AwaitingWithBuffer) {
     this.state = state;

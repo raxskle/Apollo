@@ -12,7 +12,8 @@ export class SocketAdaptor {
   //   //
   // }
   destroy() {
-    // this.socket.disconnect();
+    console.log("distory socket!!!");
+    this.socket.disconnect();
   }
   isAlive() {
     return this.socket.connected;

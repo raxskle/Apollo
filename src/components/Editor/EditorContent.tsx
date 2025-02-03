@@ -142,7 +142,7 @@ const CustomEditor = {
 
 export function EditorContent() {
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-
+  console.log("编辑器页面刷新");
   const document = useSelector((state: RootState) => state.doc.document);
   const dispatch = useDispatch();
 
@@ -173,6 +173,7 @@ export function EditorContent() {
   useEffect(() => {
     if (!docId) {
       navigate("/");
+
       return;
     }
 

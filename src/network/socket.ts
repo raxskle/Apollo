@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-let socket: Socket;
+let socket: Socket | undefined;
 
 export const getSocket = (docId?: string) => {
   if (!socket) {
@@ -12,17 +12,18 @@ export const getSocket = (docId?: string) => {
     });
 
     socket.on("connect", () => {
-      console.log("connect", socket.id);
+      console.log("connect!!", socket?.id);
     });
     socket.on("error", (error) => {
       console.log("socket:error:", error);
     });
     socket.on("disconnect", (reason) => {
       console.log("disconnect", reason);
+      socket = undefined;
     });
 
     socket.emit("hello", "world");
   }
 
-  return socket;
+  return socket as Socket;
 };

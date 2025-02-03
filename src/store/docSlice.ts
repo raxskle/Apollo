@@ -64,6 +64,11 @@ const docSlice = createSlice({
   name: "root",
   initialState,
   reducers: {
+    init(state) {
+      state.collaborator = initialState.collaborator;
+      state.document = initialState.document;
+      state.user = initialState.user;
+    },
     initDocument: (state, action: PayloadAction<{ document: Document }>) => {
       state.document = action.payload.document;
     },
@@ -100,6 +105,7 @@ export const {
   changeDocumentContent,
   updateCollaborators,
   updateLastModified,
+  init,
 } = docSlice.actions;
 export default docSlice.reducer;
 export type DocState = ReturnType<typeof docSlice.reducer>;

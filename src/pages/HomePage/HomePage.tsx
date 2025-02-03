@@ -5,14 +5,24 @@ import { DocList, queryDocList } from "../../network";
 import NavBar from "./NavBar/NavBar";
 import DocItem from "./DocItem/DocItem";
 import { DOMAIN, generateRandomString } from "../../utils";
+import { useDispatch } from "react-redux";
+import { distoryClient } from "../../lib/ot";
+import { init } from "../../store/docSlice";
 
 function HomePage() {
   const [list, setList] = useState<DocList>([]);
+
+  const dispatch = useDispatch();
+
   useEffect(() => {
     queryDocList().then((res) => {
       setList(res);
     });
-  }, []);
+
+    // 每次进入该页面，store初始化，销毁client
+    dispatch(init());
+    distoryClient();
+  }, [dispatch]);
 
   return (
     <div className="home-page">

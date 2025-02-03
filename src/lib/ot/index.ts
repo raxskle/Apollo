@@ -7,11 +7,19 @@ export * from "./editor-adaptor";
 export * from "./operation";
 export * from "./socket-adaptor";
 
-let client: Client;
+let client: Client | undefined;
 
 export const getClient = (editor: Editor, docId?: string) => {
   if (!client) {
+    console.log("new Client!!");
     client = new Client(editor, getSocket(docId));
   }
-  return client;
+  return client as Client;
+};
+
+export const distoryClient = () => {
+  if (client) {
+    client.destroy();
+  }
+  client = undefined;
 };
