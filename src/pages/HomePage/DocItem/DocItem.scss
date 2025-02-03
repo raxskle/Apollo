@@ -1,0 +1,47 @@
+.home-page-doc-list {
+  .doc-item {
+    cursor: pointer;
+    width: 100%;
+    height: 100px;
+    box-sizing: border-box;
+    padding-left: 20px;
+    padding-right: 20px;
+    transform: scaleY(1.01);
+
+    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    box-sizing: border-box;
+
+    .doc-item-wrap {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      padding-left: 20px;
+      padding-right: 20px;
+
+      border-top: solid 1px rgb(235, 235, 235);
+      border-bottom: solid 1px rgb(235, 235, 235);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+
+      .doc-item-last-modified {
+        color: rgb(182, 182, 182);
+      }
+
+      &:hover {
+        border-top: solid 1px transparent;
+        border-bottom: solid 1px transparent;
+      }
+    }
+
+    &:hover {
+      background-color: rgb(235, 235, 235);
+    }
+  }
+}

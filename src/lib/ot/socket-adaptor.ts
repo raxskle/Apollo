@@ -3,7 +3,7 @@ import { Socket } from "socket.io-client";
 export class SocketAdaptor {
   socket: Socket;
   constructor(socket: Socket) {
-    console.log("init socket");
+    console.log("init socket", socket);
     // this.socket = io("http://localhost:3002/", {});
     this.socket = socket;
     // this.initSocket(this.socket);

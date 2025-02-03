@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AlignType, CustomElement } from "../types/editor";
+import { CustomElement } from "../types/editor";
 import { Descendant } from "slate";
 
 export type Comment = {
@@ -41,98 +41,6 @@ type SystemState = {
   user: User;
   collaborator: Collaborator[];
 };
-
-export const initialContent: CustomElement[] | Descendant[] = [
-  {
-    type: "heading-one",
-    level: 1,
-    align: AlignType.Left,
-    children: [{ text: "This is editable heading-one!", italic: true }],
-  },
-  {
-    type: "heading-two",
-    level: 2,
-    align: AlignType.Left,
-    children: [{ text: "This is editable heading-two!" }],
-  },
-  {
-    type: "heading-three",
-    level: 3,
-    align: AlignType.Left,
-    children: [{ text: "This is editable heading-three!" }],
-  },
-  {
-    type: "paragraph",
-    align: AlignType.Left,
-    children: [
-      {
-        text: "This is editable plain text, just like a <textarea>!",
-      },
-    ],
-  },
-
-  {
-    type: "code",
-    children: [
-      { text: "This is editable plain text, just like a <textarea>!" },
-    ],
-  },
-  {
-    type: "block-quote",
-    children: [
-      { text: "This is editable plain text, just like a <textarea>!" },
-    ],
-  },
-  {
-    type: "paragraph",
-    align: AlignType.Center,
-    children: [
-      { text: "This is editable ", bold: true },
-      { text: "code", code: true },
-      { text: " text, just like a <textarea>!" },
-    ],
-  },
-  {
-    type: "check-list-item",
-    checked: true,
-    children: [{ text: "This is a To-do item." }],
-  },
-  {
-    type: "paragraph",
-    align: AlignType.Left,
-    children: [{ text: "Enjoy the world" }],
-  },
-  {
-    type: "divider",
-    children: [{ text: "" }],
-  },
-  {
-    type: "numbered-list",
-    children: [
-      {
-        type: "list-item",
-        children: [{ text: "this is a numbered list item 1" }],
-      },
-      {
-        type: "list-item",
-        children: [{ text: "this is a numbered list item 2" }],
-      },
-    ],
-  },
-  {
-    type: "bulleted-list",
-    children: [
-      {
-        type: "list-item",
-        children: [{ text: "this is a bulleted list item 1" }],
-      },
-      {
-        type: "list-item",
-        children: [{ text: "this is a bulleted list item 2" }],
-      },
-    ],
-  },
-];
 
 const initialState: SystemState = {
   // 初始状态

@@ -2,63 +2,159 @@
 
 import { Socket } from "socket.io";
 import { getRandomColor } from "../../src/utils";
-import { Document, initialContent } from "../../src/store/docSlice";
+import { Document } from "../../src/store/docSlice";
 import { Operation } from "../../src/lib/ot";
-import { Editor, createEditor, withoutNormalizing } from "slate";
+import { Descendant, Editor, createEditor, withoutNormalizing } from "slate";
 import { withHistory } from "slate-history";
 import { JSDOM } from "jsdom";
-import { AlignType } from "../../src/types/editor";
+import { AlignType, CustomElement } from "../../src/types/editor";
 
-const serverStartTime = Date.now();
+const getInitialDocument = (config: OTServerConfig) => {
+  const serverStartTime = Date.now();
 
-const initialDocument: Document = {
-  id: "0001",
-  title: "文档1",
-  content: initialContent,
-  lastModified: serverStartTime,
-  createdTime: serverStartTime,
-  comments: [
+  const initialContent: CustomElement[] | Descendant[] = [
     {
-      ref: {
-        type: "heading-one",
-        level: 1,
-        align: AlignType.Left,
-        children: [{ text: "This is editable heading-one!", italic: true }],
-      },
-      content: "this is a comment",
-      author: {
-        id: "001",
-        name: "raxssdas",
-      },
-      id: "comment001",
-      time: 1737896252231,
+      type: "heading-one",
+      level: 1,
+      align: AlignType.Left,
+      children: [{ text: "This is editable heading-one!", italic: true }],
     },
     {
-      ref: {
-        type: "heading-three",
-        level: 3,
-        align: AlignType.Left,
-        children: [{ text: "This is editable heading-three!" }],
-      },
-      content: "this is a comment333333",
-      author: {
-        id: "001",
-        name: "raxssdas",
-      },
-      id: "comment002",
-      time: 1737896252231,
+      type: "heading-two",
+      level: 2,
+      align: AlignType.Left,
+      children: [{ text: "This is editable heading-two!" }],
     },
     {
-      content: "this is a comment333333",
-      author: {
-        id: "001",
-        name: "raxssdas",
-      },
-      id: "comment002",
-      time: 1737896252231,
+      type: "heading-three",
+      level: 3,
+      align: AlignType.Left,
+      children: [{ text: "This is editable heading-three!" }],
     },
-  ],
-  version: 1,
+    {
+      type: "paragraph",
+      align: AlignType.Left,
+      children: [
+        {
+          text: "This is editable plain text, just like a <textarea>!",
+        },
+      ],
+    },
+
+    {
+      type: "code",
+      children: [
+        { text: "This is editable plain text, just like a <textarea>!" },
+      ],
+    },
+    {
+      type: "block-quote",
+      children: [
+        { text: "This is editable plain text, just like a <textarea>!" },
+      ],
+    },
+    {
+      type: "paragraph",
+      align: AlignType.Center,
+      children: [
+        { text: "This is editable ", bold: true },
+        { text: "code", code: true },
+        { text: " text, just like a <textarea>!" },
+      ],
+    },
+    {
+      type: "check-list-item",
+      checked: true,
+      children: [{ text: "This is a To-do item." }],
+    },
+    {
+      type: "paragraph",
+      align: AlignType.Left,
+      children: [{ text: "Enjoy the world" }],
+    },
+    {
+      type: "divider",
+      children: [{ text: "" }],
+    },
+    {
+      type: "numbered-list",
+      children: [
+        {
+          type: "list-item",
+          children: [{ text: "this is a numbered list item 1" }],
+        },
+        {
+          type: "list-item",
+          children: [{ text: "this is a numbered list item 2" }],
+        },
+      ],
+    },
+    {
+      type: "bulleted-list",
+      children: [
+        {
+          type: "list-item",
+          children: [{ text: "this is a bulleted list item 1" }],
+        },
+        {
+          type: "list-item",
+          children: [{ text: "this is a bulleted list item 2" }],
+        },
+      ],
+    },
+  ];
+
+  const initialDocument: Document = {
+    id: config.docId ?? "0001",
+    title: "新建文档",
+    content: initialContent,
+    lastModified: serverStartTime,
+    createdTime: serverStartTime,
+    comments: [
+      {
+        ref: {
+          type: "heading-one",
+          level: 1,
+          align: AlignType.Left,
+          children: [{ text: "This is editable heading-one!", italic: true }],
+        },
+        content: "this is a comment",
+        author: {
+          id: "001",
+          name: "raxssdas",
+        },
+        id: "comment001",
+        time: 1737896252231,
+      },
+      {
+        ref: {
+          type: "heading-three",
+          level: 3,
+          align: AlignType.Left,
+          children: [{ text: "This is editable heading-three!" }],
+        },
+        content: "this is a comment333333",
+        author: {
+          id: "001",
+          name: "raxssdas",
+        },
+        id: "comment002",
+        time: 1737896252231,
+      },
+      {
+        content: "this is a comment333333",
+        author: {
+          id: "001",
+          name: "raxssdas",
+        },
+        id: "comment002",
+        time: 1737896252231,
+      },
+    ],
+    version: 1,
+  };
+
+  return initialDocument;
 };
 
 export class OTClient {
@@ -76,14 +172,17 @@ const dom = new JSDOM();
 global.document = dom.window.document;
 global.window = dom.window as unknown as Window & typeof globalThis;
 
+interface OTServerConfig {
+  docId: string;
+}
 export class OTServer {
   clients: Map<string, OTClient>; // 在线的客户端
   document: Document; // 当前文档
   operations: Operation[]; // 记录操作栈
   slate: Editor; // slate示例，用于服务端应用op保持文档同步
-  constructor() {
+  constructor(config: OTServerConfig) {
     this.clients = new Map();
-    this.document = initialDocument;
+    this.document = getInitialDocument(config);
     this.operations = [];
     this.slate = withHistory(createEditor());
     this.slate.children = this.document.content;

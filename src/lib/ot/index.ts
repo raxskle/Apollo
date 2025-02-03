@@ -9,9 +9,9 @@ export * from "./socket-adaptor";
 
 let client: Client;
 
-export const getClient = (editor: Editor) => {
+export const getClient = (editor: Editor, docId?: string) => {
   if (!client) {
-    client = new Client(editor, getSocket());
+    client = new Client(editor, getSocket(docId));
   }
   return client;
 };

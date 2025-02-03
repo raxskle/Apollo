@@ -37,6 +37,7 @@ import { CommentBar } from "./CommentBar/CommentBar";
 import { getSocket } from "../../network";
 import { RemoteSelection, useRemoteSelection } from "./useRemoteSelection";
 import { cloneDeep } from "lodash";
+import { useNavigate, useSearchParams } from "react-router";
 
 // 文本leaf样式
 const Leaf = (props: RenderLeafProps) => {
@@ -152,6 +153,12 @@ export function EditorContent() {
     // remoteSelections,
   } = useRemoteSelection();
 
+  const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+  const docId = searchParams.get("id");
+  console.log("docid", docId);
+
   const renderElement = useCallback(
     (props: RenderElementProps) => <ElementWithAddBar elementProps={props} />,
     []
@@ -164,7 +171,12 @@ export function EditorContent() {
   const [operations, setOperations] = useState<SlateOperation[]>([]);
 
   useEffect(() => {
-    const client = getClient(editor);
+    if (!docId) {
+      navigate("/");
+      return;
+    }
+
+    const client = getClient(editor, docId);
 
     // 注册applyServer处理
     const handleApplyServer = ({
@@ -343,7 +355,15 @@ export function EditorContent() {
       // 取消监听
       editor.onChange = rawOnChange;
     };
-  }, [editor, dispatch, setRemoteSelections, operations, transformSelection]);
+  }, [
+    editor,
+    dispatch,
+    setRemoteSelections,
+    operations,
+    transformSelection,
+    docId,
+    navigate,
+  ]);
 
   useEffect(() => {
     const socket = getSocket();

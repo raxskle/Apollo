@@ -14,8 +14,9 @@ import { RootState } from "../../../store/index.ts";
 import { switchShowCommentBar } from "../../../store/viewSlice.ts";
 import { getSocket } from "../../../network/index.ts";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
-const BootstrapIconButton = styled(IconButton)({
+export const BootstrapIconButton = styled(IconButton)({
   color: "black",
   padding: "4px",
   "&:hover": {
@@ -28,6 +29,7 @@ export function NavBar() {
     (state: RootState) => state.doc
   );
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const relativeTime = getRelativeTime(document.lastModified);
   const [, forceUpdate] = useState({});
@@ -44,7 +46,12 @@ export function NavBar() {
   return (
     <div className="navbar">
       <div className="navbar-left">
-        <BootstrapIconButton className="expand-icon">
+        <BootstrapIconButton
+          className="expand-icon"
+          onClick={() => {
+            navigate("/");
+          }}
+        >
           <img
             src={ExpandIcon}
             width="16px"
