@@ -2,7 +2,7 @@ import "./NavBar.scss";
 import IconButton from "@mui/material/IconButton";
 import Avatar from "@mui/material/Avatar";
 import { styled } from "@mui/material/styles";
-import SettingIcon from "../../../assets/icons/setting.svg";
+import FunctionIcon from "../../../assets/icons/function.svg";
 import ExpandIcon from "../../../assets/icons/expand.svg";
 import CommentIcon from "../../../assets/icons/comment.svg";
 import Divider from "@mui/material/Divider";
@@ -15,6 +15,7 @@ import { switchShowCommentBar } from "../../../store/viewSlice.ts";
 import { getSocket } from "../../../network/index.ts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import FunctionsMenu from "./FunctionsMenu/FunctionsMenu.tsx";
 
 export const BootstrapIconButton = styled(IconButton)({
   color: "black",
@@ -106,13 +107,14 @@ export function NavBar() {
             <img src={CommentIcon} />
           </BootstrapIconButton>
         </div>
-        <div className="setting">
+        <div className="setting" tabIndex={1}>
           <BootstrapIconButton
             color="primary"
             aria-label="add to shopping cart"
           >
-            <img src={SettingIcon} />
+            <img src={FunctionIcon} />
           </BootstrapIconButton>
+          <FunctionsMenu />
         </div>
         <div className="user">
           <BootstrapIconButton

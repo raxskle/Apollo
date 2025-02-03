@@ -388,7 +388,7 @@ export function EditorContent() {
 
   return (
     <>
-      <div className="editor-content">
+      <div className="editor-content" id="editor-content">
         {document.content.length > 0 && (
           <>
             <Slate
