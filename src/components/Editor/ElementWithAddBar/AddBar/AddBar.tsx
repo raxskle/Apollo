@@ -129,7 +129,7 @@ const ElementIconMapping = (type: string, style: SVGProps<SVGSVGElement>) => {
       return <Heading2ElementIcon {...style} />;
     case "heading-three":
       return <Heading3ElementIcon {...style} />;
-    case "code":
+    case "code-block":
       return <CodeElementIcon {...style} />;
     case "block-quote":
       return <QuoteElementIcon {...style} />;

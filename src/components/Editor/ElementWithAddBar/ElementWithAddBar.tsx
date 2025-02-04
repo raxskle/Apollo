@@ -13,7 +13,10 @@ export const ElementWithAddBar = (props: ElementWithAddBarType) => {
   const { elementProps } = props;
   const [showAddBar, setShowAddBar] = useState(false);
 
-  if (elementProps.element.type === "list-item") {
+  if (
+    elementProps.element.type === "list-item" ||
+    elementProps.element.type === "code-line"
+  ) {
     return <Element {...elementProps} />;
   }
 

@@ -49,10 +49,12 @@ export const ElementDataList: ElementData[] = [
     },
   },
   {
-    type: "code",
-    displayName: "Code",
+    type: "code-block",
+    displayName: "Code Block",
     defaultData: {
-      type: "code",
+      type: "code-block",
+      language: "javascript",
+      children: [{ type: "code-line", children: [{ text: "" }] }],
     },
   },
   {
@@ -63,16 +65,7 @@ export const ElementDataList: ElementData[] = [
       checked: false,
     },
   },
-  {
-    type: "image",
-    displayName: "Image",
-    defaultData: {
-      type: "image",
-      url: "",
-      alt: "", // 不要给默认的width属性
-      align: AlignType.Left,
-    },
-  },
+
   {
     type: "numbered-list",
     displayName: "Numbered List",
@@ -95,6 +88,16 @@ export const ElementDataList: ElementData[] = [
     defaultData: {
       type: "divider",
       children: [{ text: "" }],
+    },
+  },
+  {
+    type: "image",
+    displayName: "Image",
+    defaultData: {
+      type: "image",
+      url: "",
+      alt: "", // 不要给默认的width属性
+      align: AlignType.Left,
     },
   },
 ];

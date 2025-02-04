@@ -1,8 +1,9 @@
-import { Path } from "slate";
+import { Path, Transforms } from "slate";
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 import { isCustomText } from "../../../../types/editor";
+import { useEffect } from "react";
 
-export const CodeElement = (props: RenderElementProps) => {
+export const CodeLineElement = (props: RenderElementProps) => {
   const { element } = props;
   const editor = useSlateStatic();
   const empty =
@@ -20,23 +21,26 @@ export const CodeElement = (props: RenderElementProps) => {
     editor.selection.anchor.offset === editor.selection.focus.offset &&
     Path.isAncestor(path, editor.selection?.anchor.path);
 
-  if (props.element.type !== "code") {
+  useEffect(() => {
+    // 列表第一项删除后，外层元素会被意外删除掉，path掉到顶层，需要手动清除
+    if (path.length === 1 && element.type === "code-line") {
+      Transforms.removeNodes(editor, { at: path });
+    }
+  });
+
+  if (props.element.type !== "code-line") {
     return <div>类型出错</div>;
   }
   return (
-    <pre
+    <div
       {...props.attributes}
       style={{
-        background: "rgba(9, 28, 65, 0.05)",
-        fontSize: "16px",
         textWrap: "wrap",
-        margin: "0px 0px",
-        padding: "2px 4px",
-        fontFamily: "cursive",
+        wordBreak: "break-all",
         position: "relative",
       }}
     >
-      <code className="language-javascript">{props.children}</code>
+      {props.children}
       {empty && isSelected && (
         <span
           className="empty-placeholder"
@@ -48,14 +52,14 @@ export const CodeElement = (props: RenderElementProps) => {
             position: "absolute",
             top: "0px",
             left: "0px",
-            textWrap: "nowrap",
+            textWrap: "wrap",
             fontWeight: "normal",
-            color: "rgba(180, 180, 180, 0.6)",
+            color: "rgb(180, 180, 180)",
           }}
         >
           Enter code...
         </span>
       )}
-    </pre>
+    </div>
   );
 };

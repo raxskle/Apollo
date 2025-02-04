@@ -40,13 +40,6 @@ const getInitialDocument = (config: OTServerConfig) => {
         },
       ],
     },
-
-    {
-      type: "code",
-      children: [
-        { text: "This is editable plain text, just like a <textarea>!" },
-      ],
-    },
     {
       type: "block-quote",
       children: [
@@ -100,6 +93,15 @@ const getInitialDocument = (config: OTServerConfig) => {
           type: "list-item",
           children: [{ text: "this is a bulleted list item 2" }],
         },
+      ],
+    },
+    {
+      type: "code-block",
+      language: "javascript",
+      children: [
+        { type: "code-line", children: [{ text: "function fn() {" }] },
+        { type: "code-line", children: [{ text: "  const a = 1;" }] },
+        { type: "code-line", children: [{ text: "}" }] },
       ],
     },
   ];

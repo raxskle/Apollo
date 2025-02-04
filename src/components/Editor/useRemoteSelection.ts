@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { BasePoint, NodeEntry, Range } from "slate";
 import { CustomOperation, isCustomText } from "../../types/editor";
 
@@ -26,43 +26,46 @@ export const useRemoteSelection = () => {
     Record<string, RemoteSelection>
   >({});
 
-  const decorate = ([node, path]: NodeEntry): Range[] => {
-    const ranges: (Range & {
-      isSelection: boolean;
-      selectionUser: {
-        userName: string;
-        displayColor: string;
-      };
-    })[] = [];
+  const useDecorateSelection = () => {
+    return useCallback(([node, path]: NodeEntry): Range[] => {
+      const ranges: (Range & {
+        isSelection: boolean;
+        selectionUser: {
+          userName: string;
+          displayColor: string;
+        };
+      })[] = [];
 
-    Object.entries(remoteSelections).forEach(([, selection]) => {
-      if (!selection || !isCustomText(node) || !path || !selection.focus) {
-        return;
-      }
-
-      // 计算当前节点与选区的交集
-      const intersection = Range.intersection(
-        { anchor: selection.focus, focus: selection.focus },
-        {
-          anchor: { path, offset: 0 },
-          focus: { path, offset: node.text.length },
+      Object.entries(remoteSelections).forEach(([, selection]) => {
+        if (!selection || !isCustomText(node) || !path || !selection.focus) {
+          return;
         }
-      );
 
-      if (intersection) {
-        ranges.push({
-          ...intersection,
-          isSelection: true,
-          selectionUser: {
-            userName: selection.user.name,
-            displayColor: selection.user.displayColor,
-          },
-        });
-      }
-    });
+        // 计算当前节点与选区的交集
+        const intersection = Range.intersection(
+          { anchor: selection.focus, focus: selection.focus },
+          {
+            anchor: { path, offset: 0 },
+            focus: { path, offset: node.text.length },
+          }
+        );
 
-    return ranges;
+        if (intersection) {
+          ranges.push({
+            ...intersection,
+            isSelection: true,
+            selectionUser: {
+              userName: selection.user.name,
+              displayColor: selection.user.displayColor,
+            },
+          });
+        }
+      });
+
+      return ranges;
+    }, []);
   };
+  const decorateSelection = useDecorateSelection();
 
   const transformSelection = (operations: CustomOperation[]) => {
     // todo: 修改用户光标
@@ -212,7 +215,7 @@ export const useRemoteSelection = () => {
   };
 
   return {
-    decorate,
+    decorateSelection,
     setRemoteSelections,
     remoteSelections,
     transformSelection,

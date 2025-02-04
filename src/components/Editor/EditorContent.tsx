@@ -8,6 +8,8 @@ import {
   Transforms,
   Element as SlateElement,
   Operation as SlateOperation,
+  NodeEntry,
+  Range,
 } from "slate";
 import {
   Slate,
@@ -17,7 +19,7 @@ import {
   RenderLeafProps,
 } from "slate-react";
 import { withHistory } from "slate-history";
-import { CustomEditorType } from "../../types/editor";
+import { CustomEditorType, isCustomText } from "../../types/editor";
 import { HoveringToolbar } from "./HoveringToolbar/HoveringToolbar";
 import { LeftSideBar } from "./LeftSideBar/LeftSideBar";
 import { ElementWithAddBar } from "./ElementWithAddBar/ElementWithAddBar";
@@ -38,62 +40,97 @@ import { getSocket } from "../../network";
 import { RemoteSelection, useRemoteSelection } from "./useRemoteSelection";
 import { cloneDeep } from "lodash";
 import { useNavigate, useSearchParams } from "react-router";
+import { prismThemeCss } from "./Elements/CodeBlockElement/CodeBlockElement";
+import { useDecorateCodeBlock } from "./Elements/CodeBlockElement/useDecorateCodeBlock";
+
+import {
+  decorateInlineCode,
+  SetNodeToDecorations,
+} from "./Elements/CodeBlockElement/decorateCode";
 
 // 文本leaf样式
 const Leaf = (props: RenderLeafProps) => {
+  const { attributes, children, leaf } = props;
+
+  const {
+    bold,
+    underlined,
+    italic,
+    color,
+    backgroundColor,
+    code,
+    type,
+    isSelection,
+    selectionUser,
+    ...rest
+  } = leaf;
+
   return (
     <span
-      {...props.attributes}
+      {...attributes}
       style={{
         position: "relative",
-        fontWeight: props.leaf.bold ? "bold" : "normal",
-        textDecoration: props.leaf.underlined ? "underline" : "none",
-        fontStyle: props.leaf.italic ? "italic" : "normal",
-        color: props.leaf.color ? props.leaf.color : "black",
-        backgroundColor: props.leaf.backgroundColor
-          ? props.leaf.backgroundColor
-          : "transparent",
+        fontWeight: bold ? "bold" : "normal",
+        textDecoration: underlined ? "underline" : "none",
+        fontStyle: italic ? "italic" : "normal",
+        color: color ?? "black",
+        backgroundColor: backgroundColor ?? "transparent",
       }}
     >
-      {props.leaf.code || props.leaf.type === "code" ? (
+      {/* 行内code */}
+      {code || type === "code" ? (
         <code
+          className="language-javascript"
           style={{
-            background: "rgba(9, 28, 65, 0.05)",
+            background: "rgba(32, 51, 89, 0.1)",
             textWrap: "wrap",
             margin: "8px 0px",
-            padding: "6px 0px",
+            padding: "0px",
           }}
         >
-          {props.children}
+          <span
+            className={Object.keys(rest)
+              .filter((key) => key !== "text")
+              .join(" ")}
+          >
+            {children}
+          </span>
         </code>
       ) : (
-        <>{props.children}</>
+        // 此处span加className是为了给prism渲染，同时不被外层style覆盖
+        <span
+          className={Object.keys(rest)
+            .filter((key) => key !== "text")
+            .join(" ")}
+        >
+          {children}
+        </span>
       )}
 
       {/* 选中 */}
-      {props.leaf.isSelection && (
+      {isSelection && (
         <span
           className="remote-selection"
-          {...props.attributes}
+          {...attributes}
           style={{
-            borderRight: `0.08em solid ${props.leaf.selectionUser?.displayColor}`,
+            borderRight: `0.08em solid ${selectionUser?.displayColor}`,
             opacity: "0.6",
           }} // 40 表示透明度
         >
           <div
             className="remote-selection-bar"
             style={{
-              backgroundColor: `${props.leaf.selectionUser?.displayColor}`,
+              backgroundColor: `${selectionUser?.displayColor}`,
             }}
           >
             <div
               className="remote-selection-detail"
               contentEditable="false"
               style={{
-                backgroundColor: `${props.leaf.selectionUser?.displayColor}`,
+                backgroundColor: `${selectionUser?.displayColor}`,
               }}
             >
-              {props.leaf.selectionUser?.userName}
+              {selectionUser?.userName}
             </div>
           </div>
         </span>
@@ -115,7 +152,7 @@ const CustomEditor = {
 
   isCodeBlockActive(editor: CustomEditorType) {
     const [match] = Editor.nodes(editor, {
-      match: (n) => SlateElement.isElement(n) && n.type === "code",
+      match: (n) => isCustomText(n) && n.type === "code",
     });
 
     return !!match;
@@ -147,7 +184,7 @@ export function EditorContent() {
   const dispatch = useDispatch();
 
   const {
-    decorate,
+    decorateSelection,
     setRemoteSelections,
     transformSelection,
     // remoteSelections,
@@ -157,7 +194,6 @@ export function EditorContent() {
 
   const [searchParams] = useSearchParams();
   const docId = searchParams.get("id");
-  console.log("docid", docId);
 
   const renderElement = useCallback(
     (props: RenderElementProps) => <ElementWithAddBar elementProps={props} />,
@@ -406,6 +442,19 @@ export function EditorContent() {
 
   const { showCommentBar } = useSelector((state: RootState) => state.view);
 
+  // code
+  const decorateCodeBlock = useDecorateCodeBlock(editor);
+
+  const decorate = ([node, path]: NodeEntry): Range[] => {
+    const codeBlockRanges = decorateCodeBlock([node, path]);
+    const selectionRanges = decorateSelection([node, path]);
+    const inlineCodeRanges = decorateInlineCode([node, path]);
+    const ranges = selectionRanges
+      .concat(codeBlockRanges)
+      .concat(inlineCodeRanges);
+    return ranges;
+  };
+
   return (
     <>
       <div className="editor-content" id="editor-content">
@@ -420,6 +469,7 @@ export function EditorContent() {
             >
               <LeftSideBar />
               <HoveringToolbar />
+              <SetNodeToDecorations />
               <Editable
                 decorate={decorate}
                 renderElement={renderElement}
@@ -444,6 +494,7 @@ export function EditorContent() {
                 }}
               />
               <CommentBar />
+              <style>{prismThemeCss}</style>
             </Slate>
           </>
         )}
@@ -455,3 +506,41 @@ export function EditorContent() {
     </>
   );
 }
+
+// const decorateInlineCode = ([node, path]: NodeEntry): Range[] => {
+//   const ranges: (Range & {
+//     code: true;
+//     token: true;
+//   })[] = [];
+
+//   if (isCustomText(node) && (node.code || node.type === "code")) {
+//     // 检查所有childen text，如果有code属性或者type为code
+//     // 那么将这个text转换为prism token，并且转换为range
+//     // 放到ranges中
+
+//     const tokens = Prism.tokenize(node.text, Prism.languages.javascript);
+//     let start = 0;
+
+//     for (const item of tokens) {
+//       const token = typeof item === "string" ? new Token("plain", item) : item;
+
+//       const length = token.content.length;
+//       if (!length) {
+//         continue;
+//       }
+
+//       const end = start + length;
+
+//       ranges.push({
+//         anchor: { path, offset: start },
+//         focus: { path, offset: end },
+//         code: true,
+//         token: true,
+//         [token.type]: true,
+//       });
+
+//       start = end;
+//     }
+//   }
+//   return ranges;
+// };

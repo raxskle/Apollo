@@ -71,8 +71,6 @@ export const SelectButton: FC<{
           return "Text";
         case "block-quote":
           return "Quote";
-        case "code":
-          return "Code";
         case "check-list-item":
           return "Check List";
         case "numbered-list":
@@ -81,6 +79,8 @@ export const SelectButton: FC<{
           return "Bulleted List";
         case "divider":
           return "Divider";
+        case "code-block":
+          return "Code Block";
         default:
           return text;
       }

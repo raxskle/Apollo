@@ -1,4 +1,4 @@
-import { BaseEditor, BaseOperation, Descendant, Node } from "slate";
+import { BaseEditor, BaseOperation, BaseRange, Descendant, Node } from "slate";
 import { ReactEditor } from "slate-react";
 import { HistoryEditor } from "slate-history";
 
@@ -8,7 +8,11 @@ export enum AlignType {
   Right = "right",
 }
 
-export type CustomEditorType = BaseEditor & ReactEditor & HistoryEditor;
+export type CustomEditorType = BaseEditor &
+  ReactEditor &
+  HistoryEditor & {
+    nodeToDecorations: Map<CustomElement, BaseRange[]>;
+  };
 export type CustomTextDecoration = "bold" | "italic" | "underlined" | "code";
 export type CustomText = {
   text: string;
@@ -51,11 +55,6 @@ export type blockQuoteElement = {
   children: CustomText[];
 };
 
-export type CodeElement = {
-  type: "code";
-  children: CustomText[];
-};
-
 export type CheckListItemElement = {
   type: "check-list-item";
   checked: boolean;
@@ -91,17 +90,29 @@ export type DividerElement = {
   children: CustomText[]; // 占位
 };
 
+export type CodeBlockElement = {
+  type: "code-block";
+  language: string;
+  children: CodeLineElement[];
+};
+
+export type CodeLineElement = {
+  type: "code-line";
+  children: CustomText[];
+};
+
 export type CustomElement =
   | ParagraphElement
   | HeadingElement
-  | CodeElement
   | blockQuoteElement
   | CheckListItemElement
   | ImageElement
   | NumberedListElement
   | BulletedListElement
   | ListItemElement
-  | DividerElement;
+  | DividerElement
+  | CodeBlockElement
+  | CodeLineElement;
 
 export type CustomOperation = BaseOperation & {
   applyServer?: boolean;
