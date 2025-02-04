@@ -61,7 +61,7 @@ const Leaf = (props: RenderLeafProps) => {
             background: "rgba(9, 28, 65, 0.05)",
             textWrap: "wrap",
             margin: "8px 0px",
-            padding: "6px 4px",
+            padding: "6px 0px",
           }}
         >
           {props.children}
@@ -382,6 +382,7 @@ export function EditorContent() {
     transformSelection,
     docId,
     navigate,
+    userId,
   ]);
 
   useEffect(() => {
