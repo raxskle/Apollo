@@ -2,12 +2,13 @@ import { io, Socket } from "socket.io-client";
 
 let socket: Socket | undefined;
 
-export const getSocket = (docId?: string) => {
+export const getSocket = (docId?: string, userId?: string) => {
   if (!socket) {
     console.log("socket连接", docId);
     socket = io("http://localhost:3002/", {
       auth: {
         docId: docId,
+        userId: userId,
       },
     });
 

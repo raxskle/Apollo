@@ -93,7 +93,7 @@ const Leaf = (props: RenderLeafProps) => {
                 backgroundColor: `${props.leaf.selectionUser?.displayColor}`,
               }}
             >
-              {props.leaf.selectionUser?.userId}
+              {props.leaf.selectionUser?.userName}
             </div>
           </div>
         </span>
@@ -142,7 +142,7 @@ const CustomEditor = {
 
 export function EditorContent() {
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-  console.log("编辑器页面刷新");
+
   const document = useSelector((state: RootState) => state.doc.document);
   const dispatch = useDispatch();
 
@@ -170,6 +170,16 @@ export function EditorContent() {
 
   const [operations, setOperations] = useState<SlateOperation[]>([]);
 
+  const userId = useSelector((state: RootState) => state.doc.user.id);
+
+  useEffect(() => {
+    // 未登录跳转登录页
+    // todo 登陆完跳回来
+    if (!userId) {
+      navigate("/");
+    }
+  }, [navigate, userId]);
+
   useEffect(() => {
     if (!docId) {
       navigate("/");
@@ -177,7 +187,7 @@ export function EditorContent() {
       return;
     }
 
-    const client = getClient(editor, docId);
+    const client = getClient(editor, docId, userId);
 
     // 注册applyServer处理
     const handleApplyServer = ({
@@ -203,10 +213,18 @@ export function EditorContent() {
 
       dispatch(
         updateCollaborators({
-          collaborators: userList.map((item) => {
-            const [socketId, user] = item;
-            return new Collaborator(socketId, user.userName, user.displayColor);
-          }),
+          collaborators: userList
+            .map((item) => {
+              const [, OTClient] = item;
+              return new Collaborator(
+                OTClient.user.id,
+                OTClient.user.name,
+                OTClient.user.displayColor
+              );
+            })
+            .filter((c) => {
+              return c.id !== userId;
+            }),
         })
       );
 
@@ -215,7 +233,7 @@ export function EditorContent() {
         const newSelections = cloneDeep(prev);
 
         Object.keys(newSelections).forEach((userId) => {
-          if (!userList.find((item) => item[1].userName === userId)) {
+          if (!userList.find(([, OTClient]) => OTClient.user.id === userId)) {
             delete newSelections[userId];
           }
         });
@@ -248,7 +266,7 @@ export function EditorContent() {
     const handleRemoteSelection = (selection: RemoteSelection) => {
       setRemoteSelections((prev) => ({
         ...prev,
-        [selection.userId]: selection,
+        [selection.user.id]: selection,
       }));
     };
     client.socketAdaptor.resigterAction<RemoteSelection>(

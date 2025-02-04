@@ -5,6 +5,9 @@ import { OTServer } from "./ot";
 import { Operation } from "../src/lib/ot";
 import Router from "koa-router";
 import cors from "koa2-cors";
+import { AuthUser } from "./types";
+import { generateRandomString, getRandomColor } from "../src/utils";
+import bodyParser from "koa-bodyparser";
 
 process.on("uncaughtException", (error) => {
   console.error("捕捉到未捕获的异常:", error.message);
@@ -28,6 +31,7 @@ app.use(
     maxAge: 500, // 预检请求的缓存时间（秒）
   })
 );
+app.use(bodyParser());
 
 const router = new Router();
 const httpServer = createServer(app.callback());
@@ -40,6 +44,26 @@ export const io = new Server(httpServer, {
 // docId => OTServer
 const DocsMapping = new Map<string, OTServer>();
 
+// 登录步骤
+// 弹窗http请求，昵称密码校验，返回前端userId，前端更新store user，
+// socket连接时，可能还没登录，此时userId为空或map找不到用户，为防止这种情况，必须登陆后才能进入文档
+// socket连接时，如果已经登录，带userId，对应到user
+// 用户 userId => AuthUser
+const UserMapping = new Map<string, AuthUser>();
+
+const registerUser = (name: string, password: string) => {
+  const id = generateRandomString(10);
+  const displayColor = getRandomColor();
+  UserMapping.set(id, {
+    id: id,
+    displayColor,
+    name,
+    password,
+  });
+
+  return { id, name, displayColor };
+};
+
 io.on("connection", (socket) => {
   // 连接
   // 根据docId寻找对应文档，不存在则创建
@@ -47,10 +71,18 @@ io.on("connection", (socket) => {
     "connection:: socketId:",
     socket.id,
     ", docId:",
-    socket.handshake.auth.docId
+    socket.handshake.auth.docId,
+    ", userId:",
+    socket.handshake.auth.userId
   );
 
   const docId = socket.handshake.auth.docId;
+  const userId = socket.handshake.auth.userId;
+  const user = UserMapping.get(userId) ?? {
+    id: "user1",
+    name: "未知用户",
+    displayColor: "grey",
+  };
 
   if (!DocsMapping.has(docId)) {
     console.log("otServer init!!");
@@ -62,7 +94,11 @@ io.on("connection", (socket) => {
   // 根据docId隔离客户端，io广播以docId为room
   socket.join(docId);
 
-  otServer.clientConnect(socket);
+  otServer.clientConnect(socket, {
+    id: user.id,
+    name: user.name,
+    displayColor: user.displayColor,
+  });
   io.to(docId).emit("updateUserCount", { data: otServer.getClients() }); // 广播
   socket.emit("initialDocument", otServer.document);
 
@@ -103,13 +139,16 @@ io.on("connection", (socket) => {
     const client = otServer.getClient(socket.id);
     socket.broadcast.to(docId).emit("updateRemoteSelection", {
       focus: msg.focus,
-      userId: client?.userName ?? "unknown",
-      displayColor: client?.displayColor ?? "green",
+      user: client?.user ?? {
+        id: "unknown",
+        name: "unknown",
+        displayColor: "grey",
+      },
     });
   });
 });
 
-router.get("/doclist", (ctx) => {
+router.get("/doclist", async (ctx) => {
   ctx.body = {
     list: [...DocsMapping.keys()].map((key) => {
       const doc = DocsMapping.get(key);
@@ -122,6 +161,41 @@ router.get("/doclist", (ctx) => {
       };
     }),
   };
+});
+
+type LoginReq = {
+  userName: string;
+  password: string;
+};
+
+router.post("/login", async (ctx) => {
+  const { userName, password } = ctx.request.body as LoginReq;
+
+  UserMapping.forEach((user) => {
+    if (user.name === userName) {
+      if (user.password === password) {
+        ctx.body = {
+          data: {
+            id: user.id,
+            name: user.name,
+            displayColor: user.displayColor,
+          },
+        };
+      } else {
+        ctx.body = {
+          err: "密码错误",
+        };
+      }
+    }
+  });
+
+  if (!ctx.body) {
+    // 注册
+    const user = registerUser(userName, password);
+    ctx.body = {
+      data: user,
+    };
+  }
 });
 
 app.use(router.routes()).use(router.allowedMethods());

@@ -1,13 +1,13 @@
 // OT算法的服务端
 
 import { Socket } from "socket.io";
-import { getRandomColor } from "../../src/utils";
 import { Document } from "../../src/store/docSlice";
 import { Operation } from "../../src/lib/ot";
 import { Descendant, Editor, createEditor, withoutNormalizing } from "slate";
 import { withHistory } from "slate-history";
 import { JSDOM } from "jsdom";
 import { AlignType, CustomElement } from "../../src/types/editor";
+import { User } from "../types";
 
 const getInitialDocument = (config: OTServerConfig) => {
   const serverStartTime = Date.now();
@@ -122,6 +122,8 @@ const getInitialDocument = (config: OTServerConfig) => {
         author: {
           id: "001",
           name: "raxssdas",
+
+          displayColor: "grey",
         },
         id: "comment001",
         time: 1737896252231,
@@ -137,6 +139,7 @@ const getInitialDocument = (config: OTServerConfig) => {
         author: {
           id: "001",
           name: "raxssdas",
+          displayColor: "grey",
         },
         id: "comment002",
         time: 1737896252231,
@@ -146,6 +149,7 @@ const getInitialDocument = (config: OTServerConfig) => {
         author: {
           id: "001",
           name: "raxssdas",
+          displayColor: "grey",
         },
         id: "comment002",
         time: 1737896252231,
@@ -159,12 +163,10 @@ const getInitialDocument = (config: OTServerConfig) => {
 
 export class OTClient {
   socketId: string;
-  userName: string;
-  displayColor: string;
-  constructor(id: string) {
+  user: User;
+  constructor(id: string, user: User) {
     this.socketId = id;
-    this.userName = id.slice(0, 4);
-    this.displayColor = getRandomColor();
+    this.user = user;
   }
 }
 
@@ -176,7 +178,7 @@ interface OTServerConfig {
   docId: string;
 }
 export class OTServer {
-  clients: Map<string, OTClient>; // 在线的客户端
+  clients: Map<string, OTClient>; // 在线的客户端 socketId => OTClient
   document: Document; // 当前文档
   operations: Operation[]; // 记录操作栈
   slate: Editor; // slate示例，用于服务端应用op保持文档同步
@@ -187,8 +189,9 @@ export class OTServer {
     this.slate = withHistory(createEditor());
     this.slate.children = this.document.content;
   }
-  clientConnect(socket: Socket) {
-    this.clients.set(socket.id, new OTClient(socket.id));
+  clientConnect(socket: Socket, user: User) {
+    // todo: 这里改为socketId => AuthUser
+    this.clients.set(socket.id, new OTClient(socket.id, user));
   }
   clientDisconnect(socket: Socket) {
     this.clients.delete(socket.id);

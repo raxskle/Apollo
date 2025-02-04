@@ -1,17 +1,26 @@
 import { Avatar } from "@mui/material";
 import { BootstrapIconButton } from "../../EditorPage/NavBar/NavBar";
 import "./NavBar.scss";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
 
 function NavBar() {
+  const user = useSelector((state: RootState) => state.doc.user);
   return (
     <div className="nav-bar">
       <div className="user">
-        <BootstrapIconButton color="primary" aria-label="add to shopping cart">
+        <BootstrapIconButton color="primary">
           <Avatar
-            alt="Remy Sharp"
-            style={{ width: "30px", height: "30px" }}
-            src="https://s1-imfile.feishucdn.com/static-resource/v1/v2_051b6637-4422-4383-ac7a-2afd283653fg~?image_size=noop&cut_type=&quality=&format=image&sticker_format=.webp"
-          ></Avatar>
+            alt={user.name}
+            style={{
+              width: "30px",
+              height: "30px",
+              fontSize: "11px",
+              backgroundColor: user.displayColor,
+            }}
+          >
+            {user.name.slice(0, 4)}
+          </Avatar>
         </BootstrapIconButton>
       </div>
     </div>

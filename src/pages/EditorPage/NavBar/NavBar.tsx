@@ -9,13 +9,14 @@ import Divider from "@mui/material/Divider";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import { useDispatch, useSelector } from "react-redux";
 import { changeDocumentTitle } from "../../../store/docSlice.ts";
-import { getRelativeTime } from "../../../utils/index.ts";
+import { formatDate, getRelativeTime } from "../../../utils/index.ts";
 import { RootState } from "../../../store/index.ts";
 import { switchShowCommentBar } from "../../../store/viewSlice.ts";
 import { getSocket } from "../../../network/index.ts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import FunctionsMenu from "./FunctionsMenu/FunctionsMenu.tsx";
+import { Tooltip } from "@mui/material";
 
 export const BootstrapIconButton = styled(IconButton)({
   color: "black",
@@ -44,22 +45,41 @@ export function NavBar() {
     };
   }, []);
 
+  const user = useSelector((state: RootState) => state.doc.user);
+
   return (
     <div className="navbar">
       <div className="navbar-left">
-        <BootstrapIconButton
-          className="expand-icon"
-          onClick={() => {
-            navigate("/");
+        <Tooltip
+          title="文档列表"
+          enterDelay={1000}
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: "offset",
+                  options: {
+                    offset: [0, -8],
+                  },
+                },
+              ],
+            },
           }}
         >
-          <img
-            src={ExpandIcon}
-            width="16px"
-            height="16px"
-            style={{ margin: "2px" }}
-          />
-        </BootstrapIconButton>
+          <BootstrapIconButton
+            className="expand-icon"
+            onClick={() => {
+              navigate("/");
+            }}
+          >
+            <img
+              src={ExpandIcon}
+              width="16px"
+              height="16px"
+              style={{ margin: "2px" }}
+            />
+          </BootstrapIconButton>
+        </Tooltip>
         <div className="file-name-bar">
           <span className="file-name-input-mask">{document.title}</span>
           <input
@@ -73,60 +93,114 @@ export function NavBar() {
           />
         </div>
         {document.lastModified !== 0 && (
-          <div className="tipbar-last-edit">最近修改：{relativeTime}</div>
+          <Tooltip
+            title={`创建日期：${formatDate(document.createdTime)}`}
+            enterDelay={1000}
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [20, -8],
+                    },
+                  },
+                ],
+              },
+            }}
+          >
+            <div className="tipbar-last-edit">最近修改：{relativeTime}</div>
+          </Tooltip>
         )}
       </div>
 
       <div className="navbar-right">
         <div className="collaborator-list">
-          <AvatarGroup total={collaborator.length}>
-            {collaborator.slice(0, 4).map((item) => {
-              return (
-                <Avatar
-                  alt={item.name}
-                  style={{ background: item.displayColor }}
-                >
-                  {item.name}
-                </Avatar>
-              );
-            })}
-          </AvatarGroup>
+          <Tooltip title="在线协同者" arrow>
+            <AvatarGroup total={collaborator.length} max={4}>
+              {collaborator.slice(0, 4).map((item) => {
+                return (
+                  <Avatar
+                    alt={item.name}
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      fontSize: "10px",
+                      background: item.displayColor,
+                    }}
+                  >
+                    {item.name.slice(0, 4)}
+                  </Avatar>
+                );
+              })}
+            </AvatarGroup>
+          </Tooltip>
         </div>
 
         <Divider orientation="vertical" flexItem />
-        <div
-          className="comment"
-          onClick={() => {
-            dispatch(switchShowCommentBar());
-          }}
-        >
-          <BootstrapIconButton
-            color="primary"
-            aria-label="add to shopping cart"
+        <div className="comment">
+          <Tooltip
+            title="评论"
+            enterDelay={1000}
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [0, -8],
+                    },
+                  },
+                ],
+              },
+            }}
           >
-            <img src={CommentIcon} />
-          </BootstrapIconButton>
+            <BootstrapIconButton
+              color="primary"
+              onClick={() => {
+                dispatch(switchShowCommentBar());
+              }}
+            >
+              <img src={CommentIcon} />
+            </BootstrapIconButton>
+          </Tooltip>
         </div>
         <div className="setting" tabIndex={1}>
-          <BootstrapIconButton
-            color="primary"
-            aria-label="add to shopping cart"
+          <Tooltip
+            title="更多"
+            enterDelay={1000}
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [0, -8],
+                    },
+                  },
+                ],
+              },
+            }}
           >
-            <img src={FunctionIcon} />
-          </BootstrapIconButton>
+            <BootstrapIconButton color="primary">
+              <img src={FunctionIcon} />
+            </BootstrapIconButton>
+          </Tooltip>
+
           <FunctionsMenu />
         </div>
         <div className="user">
-          <BootstrapIconButton
-            color="primary"
-            aria-label="add to shopping cart"
-          >
+          <BootstrapIconButton color="primary">
             <Avatar
-              alt="Remy Sharp"
-              style={{ width: "30px", height: "30px" }}
-              src="https://s1-imfile.feishucdn.com/static-resource/v1/v2_051b6637-4422-4383-ac7a-2afd283653fg~?image_size=noop&cut_type=&quality=&format=image&sticker_format=.webp"
+              alt={user.name}
+              style={{
+                width: "30px",
+                height: "30px",
+                fontSize: "11px",
+                backgroundColor: user.displayColor,
+              }}
             >
-              N
+              {user.name.slice(0, 4)}
             </Avatar>
           </BootstrapIconButton>
         </div>

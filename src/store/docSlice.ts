@@ -20,9 +20,10 @@ export type Document = {
   version: number; // 文档的版本号
 };
 
-type User = {
+export type User = {
   id: string;
   name: string;
+  displayColor: string;
 };
 
 export class Collaborator {
@@ -54,8 +55,9 @@ const initialState: SystemState = {
     version: 0,
   },
   user: {
-    id: "abc",
-    name: "Raxskle",
+    id: "",
+    name: "User",
+    displayColor: "grey",
   },
   collaborator: [],
 };
@@ -67,7 +69,6 @@ const docSlice = createSlice({
     init(state) {
       state.collaborator = initialState.collaborator;
       state.document = initialState.document;
-      state.user = initialState.user;
     },
     initDocument: (state, action: PayloadAction<{ document: Document }>) => {
       state.document = action.payload.document;
@@ -96,6 +97,9 @@ const docSlice = createSlice({
     ) => {
       state.collaborator = action.payload.collaborators;
     },
+    setUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+    },
   },
 });
 
@@ -106,6 +110,7 @@ export const {
   updateCollaborators,
   updateLastModified,
   init,
+  setUser,
 } = docSlice.actions;
 export default docSlice.reducer;
 export type DocState = ReturnType<typeof docSlice.reducer>;

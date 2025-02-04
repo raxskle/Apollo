@@ -14,11 +14,11 @@ import {
   sibling,
 } from "../../lib/ot/utils";
 import { cloneDeep } from "lodash";
+import { User } from "../../store/docSlice";
 
 export type RemoteSelection = {
   focus: BasePoint;
-  userId: string;
-  displayColor: string;
+  user: User;
 };
 
 export const useRemoteSelection = () => {
@@ -30,12 +30,12 @@ export const useRemoteSelection = () => {
     const ranges: (Range & {
       isSelection: boolean;
       selectionUser: {
-        userId: string;
+        userName: string;
         displayColor: string;
       };
     })[] = [];
 
-    Object.entries(remoteSelections).forEach(([userId, selection]) => {
+    Object.entries(remoteSelections).forEach(([, selection]) => {
       if (!selection || !isCustomText(node) || !path || !selection.focus) {
         return;
       }
@@ -54,8 +54,8 @@ export const useRemoteSelection = () => {
           ...intersection,
           isSelection: true,
           selectionUser: {
-            userId: userId,
-            displayColor: selection.displayColor,
+            userName: selection.user.name,
+            displayColor: selection.user.displayColor,
           },
         });
       }

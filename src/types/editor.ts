@@ -22,7 +22,7 @@ export type CustomText = {
   backgroundColor?: string;
   isSelection?: boolean; // 其他用户选中光标
   selectionUser?: {
-    userId: string;
+    userName: string;
     displayColor: string;
   };
 };
