@@ -65,6 +65,8 @@ const Leaf = (props: RenderLeafProps) => {
     ...rest
   } = leaf;
 
+  console.log("isSelection >>>>>", isSelection);
+
   return (
     <span
       {...attributes}
@@ -452,6 +454,7 @@ export function EditorContent() {
     const ranges = selectionRanges
       .concat(codeBlockRanges)
       .concat(inlineCodeRanges);
+    console.log("decorate >>>>>>>", ranges);
     return ranges;
   };
 

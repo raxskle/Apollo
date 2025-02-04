@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { BasePoint, NodeEntry, Range } from "slate";
 import { CustomOperation, isCustomText } from "../../types/editor";
 
@@ -26,46 +26,43 @@ export const useRemoteSelection = () => {
     Record<string, RemoteSelection>
   >({});
 
-  const useDecorateSelection = () => {
-    return useCallback(([node, path]: NodeEntry): Range[] => {
-      const ranges: (Range & {
-        isSelection: boolean;
-        selectionUser: {
-          userName: string;
-          displayColor: string;
-        };
-      })[] = [];
+  const decorateSelection = ([node, path]: NodeEntry): Range[] => {
+    const ranges: (Range & {
+      isSelection: boolean;
+      selectionUser: {
+        userName: string;
+        displayColor: string;
+      };
+    })[] = [];
 
-      Object.entries(remoteSelections).forEach(([, selection]) => {
-        if (!selection || !isCustomText(node) || !path || !selection.focus) {
-          return;
+    Object.entries(remoteSelections).forEach(([, selection]) => {
+      if (!selection || !isCustomText(node) || !path || !selection.focus) {
+        return;
+      }
+
+      // 计算当前节点与选区的交集
+      const intersection = Range.intersection(
+        { anchor: selection.focus, focus: selection.focus },
+        {
+          anchor: { path, offset: 0 },
+          focus: { path, offset: node.text.length },
         }
+      );
 
-        // 计算当前节点与选区的交集
-        const intersection = Range.intersection(
-          { anchor: selection.focus, focus: selection.focus },
-          {
-            anchor: { path, offset: 0 },
-            focus: { path, offset: node.text.length },
-          }
-        );
+      if (intersection) {
+        ranges.push({
+          ...intersection,
+          isSelection: true,
+          selectionUser: {
+            userName: selection.user.name,
+            displayColor: selection.user.displayColor,
+          },
+        });
+      }
+    });
 
-        if (intersection) {
-          ranges.push({
-            ...intersection,
-            isSelection: true,
-            selectionUser: {
-              userName: selection.user.name,
-              displayColor: selection.user.displayColor,
-            },
-          });
-        }
-      });
-
-      return ranges;
-    }, []);
+    return ranges;
   };
-  const decorateSelection = useDecorateSelection();
 
   const transformSelection = (operations: CustomOperation[]) => {
     // todo: 修改用户光标
