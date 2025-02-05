@@ -5,6 +5,7 @@ import { styled } from "@mui/material/styles";
 import FunctionIcon from "../../../assets/icons/function.svg";
 import ExpandIcon from "../../../assets/icons/expand.svg";
 import CommentIcon from "../../../assets/icons/comment.svg";
+import SearchIcon from "../../../assets/icons/SearchIcon.svg";
 import Divider from "@mui/material/Divider";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +18,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import FunctionsMenu from "./FunctionsMenu/FunctionsMenu.tsx";
 import { Tooltip } from "@mui/material";
+import SearchBar from "./SearchBar/SearchBar.tsx";
 
 export const BootstrapIconButton = styled(IconButton)({
   color: "black",
@@ -138,6 +140,29 @@ export function NavBar() {
         </div>
 
         <Divider orientation="vertical" flexItem />
+        <div className="search" tabIndex={1}>
+          <Tooltip
+            title="搜索"
+            enterDelay={1000}
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [0, -8],
+                    },
+                  },
+                ],
+              },
+            }}
+          >
+            <BootstrapIconButton color="primary">
+              <img src={SearchIcon} />
+            </BootstrapIconButton>
+          </Tooltip>
+          <SearchBar />
+        </div>
         <div className="comment">
           <Tooltip
             title="评论"
@@ -186,7 +211,6 @@ export function NavBar() {
               <img src={FunctionIcon} />
             </BootstrapIconButton>
           </Tooltip>
-
           <FunctionsMenu />
         </div>
         <div className="user">

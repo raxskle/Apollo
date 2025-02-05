@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = { showCommentBar: false };
+const initialState = { showCommentBar: false, search: "" };
 
 const viewSlice = createSlice({
   name: "root",
@@ -9,9 +9,12 @@ const viewSlice = createSlice({
     switchShowCommentBar: (state) => {
       state.showCommentBar = !state.showCommentBar;
     },
+    setSearch: (state, action) => {
+      state.search = action.payload;
+    },
   },
 });
 
-export const { switchShowCommentBar } = viewSlice.actions;
+export const { switchShowCommentBar, setSearch } = viewSlice.actions;
 export default viewSlice.reducer;
 export type ViewState = ReturnType<typeof viewSlice.reducer>;

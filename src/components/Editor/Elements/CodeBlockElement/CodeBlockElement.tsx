@@ -39,6 +39,7 @@ export const CodeBlockElement = (props: RenderElementProps) => {
         paddingTop: "36px",
         paddingLeft: "12px",
         position: "relative",
+        borderRadius: "4px",
       }}
       spellCheck={false}
       className={`language-${element.language} code-block-element`}

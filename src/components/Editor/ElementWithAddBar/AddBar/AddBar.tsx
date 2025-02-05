@@ -108,8 +108,8 @@ export const AddBar = (props: AddBarProps) => {
                 onClick={() => addElement({ ...el.defaultData })}
               >
                 {ElementIconMapping(el.type, {
-                  width: "18px",
-                  height: "18px",
+                  width: "16px",
+                  height: "16px",
                 })}
                 {el.displayName}
               </div>

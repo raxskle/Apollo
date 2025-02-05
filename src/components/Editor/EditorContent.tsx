@@ -47,6 +47,7 @@ import {
   decorateInlineCode,
   SetNodeToDecorations,
 } from "./Elements/CodeBlockElement/decorateCode";
+import { useDecorateSearch } from "../../pages/EditorPage/NavBar/SearchBar/useDecorateSearch";
 
 // 文本leaf样式
 const Leaf = (props: RenderLeafProps) => {
@@ -62,21 +63,24 @@ const Leaf = (props: RenderLeafProps) => {
     type,
     isSelection,
     selectionUser,
+    highlight,
     ...rest
   } = leaf;
-
-  console.log("isSelection >>>>>", isSelection);
 
   return (
     <span
       {...attributes}
+      {...(highlight && { "data-cy": "search-highlighted" })}
       style={{
         position: "relative",
         fontWeight: bold ? "bold" : "normal",
         textDecoration: underlined ? "underline" : "none",
         fontStyle: italic ? "italic" : "normal",
         color: color ?? "black",
-        backgroundColor: backgroundColor ?? "transparent",
+        backgroundColor: highlight
+          ? "#ffeeba"
+          : (backgroundColor ?? "transparent"),
+        borderRadius: highlight ? "4px" : "",
       }}
     >
       {/* 行内code */}
@@ -446,15 +450,18 @@ export function EditorContent() {
 
   // code
   const decorateCodeBlock = useDecorateCodeBlock(editor);
+  const { decorateSearch } = useDecorateSearch();
 
   const decorate = ([node, path]: NodeEntry): Range[] => {
     const codeBlockRanges = decorateCodeBlock([node, path]);
     const selectionRanges = decorateSelection([node, path]);
     const inlineCodeRanges = decorateInlineCode([node, path]);
+    const searchRanges = decorateSearch([node, path]);
     const ranges = selectionRanges
       .concat(codeBlockRanges)
-      .concat(inlineCodeRanges);
-    console.log("decorate >>>>>>>", ranges);
+      .concat(inlineCodeRanges)
+      .concat(searchRanges);
+
     return ranges;
   };
 

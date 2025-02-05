@@ -24,6 +24,7 @@ export type CustomText = {
   code?: boolean;
   color?: string;
   backgroundColor?: string;
+  highlight?: boolean;
   isSelection?: boolean; // 其他用户选中光标
   selectionUser?: {
     userName: string;
@@ -119,8 +120,10 @@ export type CustomOperation = BaseOperation & {
   undo?: boolean;
 };
 
-export function isCustomElement(node: Descendant): node is CustomElement {
-  return node.type !== undefined;
+export function isCustomElement(
+  node: Descendant | CustomEditorType
+): node is CustomElement {
+  return "type" in node && node.type !== undefined && !("text" in node);
 }
 
 export function isCodeBlockElement(node: Descendant): node is CodeBlockElement {
