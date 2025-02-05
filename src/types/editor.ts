@@ -123,6 +123,10 @@ export function isCustomElement(node: Descendant): node is CustomElement {
   return node.type !== undefined;
 }
 
+export function isCodeBlockElement(node: Descendant): node is CodeBlockElement {
+  return node.type === "code-block";
+}
+
 declare module "slate" {
   interface CustomTypes {
     Editor: CustomEditorType;

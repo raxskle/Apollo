@@ -5,6 +5,11 @@ import { useSlateStatic } from "slate-react";
 import { CodeBlockElement, isCustomText } from "../../../../types/editor";
 import { normalizeTokens } from "../../../../utils/normalizeTokens";
 import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-jsx";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-tsx";
+import "prismjs/components/prism-python";
+import "prismjs/components/prism-java";
 
 export const decorateInlineCode = ([node, path]: NodeEntry): Range[] => {
   const ranges: (Range & {

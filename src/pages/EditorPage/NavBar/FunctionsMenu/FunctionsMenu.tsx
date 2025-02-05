@@ -3,7 +3,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../store";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 function FunctionsMenu() {
   function exportDivToPDF(fileName: string) {
@@ -70,12 +70,14 @@ function FunctionsMenu() {
         onClick={() => {
           const url = window.location.href;
           navigator.clipboard.writeText(url);
-          toast("已复制链接");
+          toast("已复制链接", {
+            id: "copy-link",
+          });
         }}
       >
         复制链接
       </div>
-      <Toaster />
+
       <div className="functions-menu-divider"></div>
       <div className="function-item">设置字体</div>
       <div className="function-item">设置封面图</div>

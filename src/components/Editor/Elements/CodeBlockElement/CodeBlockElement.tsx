@@ -1,12 +1,18 @@
+import { Select } from "antd";
 import { Transforms } from "slate";
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
+import { isCodeBlockElement } from "../../../../types/editor";
+import "./CodeBlockElement.scss";
+import toast from "react-hot-toast";
 
 export const CodeBlockElement = (props: RenderElementProps) => {
   const { element } = props;
   const editor = useSlateStatic();
 
-  const path = ReactEditor.findPath(editor, element);
-  Transforms.setNodes(editor, { language: "javascript" }, { at: path });
+  const setLanguage = (language: string) => {
+    const path = ReactEditor.findPath(editor, element);
+    Transforms.setNodes(editor, { language }, { at: path });
+  };
 
   if (element.children.length === 0) {
     // 无子元素时删除
@@ -16,7 +22,7 @@ export const CodeBlockElement = (props: RenderElementProps) => {
     return;
   }
 
-  if (props.element.type !== "code-block") {
+  if (!isCodeBlockElement(element)) {
     return <div>类型出错</div>;
   }
 
@@ -24,17 +30,69 @@ export const CodeBlockElement = (props: RenderElementProps) => {
     <pre
       {...props.attributes}
       style={{
-        background: "rgba(32, 51, 89, 0.1)",
+        background: "rgba(209, 213, 222, 0.4)",
         fontSize: "16px",
         textWrap: "wrap",
         margin: "20px 0px",
-        padding: "8px 10px",
+        paddingRight: "12px",
+        paddingBottom: "6px",
+        paddingTop: "36px",
+        paddingLeft: "12px",
         position: "relative",
       }}
       spellCheck={false}
-      className="language-javascript"
+      className={`language-${element.language} code-block-element`}
     >
-      <code className="language-javascript">{props.children}</code>
+      <div
+        contentEditable={false}
+        style={{
+          position: "absolute",
+          top: "6px",
+          left: "6px",
+          backgroundColor: "transparent",
+        }}
+        className="code-block-language-select-wrap"
+      >
+        <Select
+          defaultValue={element.language}
+          className="code-block-language-select"
+          style={{
+            height: 24,
+          }}
+          dropdownStyle={{ width: "120px" }}
+          onChange={setLanguage}
+          options={[
+            { value: "javascript", label: "JavaScript" },
+            { value: "html", label: "HTML" },
+            { value: "css", label: "CSS" },
+            { value: "jsx", label: "JSX" },
+            { value: "java", label: "Java" },
+            { value: "python", label: "Python" },
+          ]}
+        />
+      </div>
+      <div
+        className="code-block-copy-code-btn"
+        contentEditable={false}
+        onClick={() => {
+          const code = element.children
+            .map((line) => {
+              return line.children
+                .map((text) => {
+                  return text.text;
+                })
+                .join("");
+            })
+            .join("\n");
+          navigator.clipboard.writeText(code);
+          toast("已复制代码", {
+            id: "copy-code",
+          });
+        }}
+      >
+        Copy
+      </div>
+      <code className={`language-${element.language}`}>{props.children}</code>
     </pre>
   );
 };

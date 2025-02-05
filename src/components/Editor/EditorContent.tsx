@@ -84,7 +84,7 @@ const Leaf = (props: RenderLeafProps) => {
         <code
           className="language-javascript"
           style={{
-            background: "rgba(32, 51, 89, 0.1)",
+            background: "rgba(209, 213, 222, 0.4)",
             textWrap: "wrap",
             margin: "8px 0px",
             padding: "0px",
