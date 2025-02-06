@@ -296,7 +296,7 @@ export function EditorContent() {
         })
       );
       client.setRevision(res.version); // Client版本同步
-      console.log("init document", res);
+      console.log("init document >>>>>>>>>>>", res);
       Transforms.insertNodes(editor, res.content);
     };
     client.socketAdaptor.resigterAction<Document>(

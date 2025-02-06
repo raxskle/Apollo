@@ -158,7 +158,15 @@ export function NavBar() {
             }}
           >
             <BootstrapIconButton color="primary">
-              <img src={SearchIcon} />
+              <img
+                src={SearchIcon}
+                style={{
+                  marginLeft: "1px",
+                  marginRight: "1px",
+                  marginTop: "2px",
+                  marginBottom: "0px",
+                }}
+              />
             </BootstrapIconButton>
           </Tooltip>
           <SearchBar />

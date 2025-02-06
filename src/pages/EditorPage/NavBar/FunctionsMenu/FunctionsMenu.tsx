@@ -4,7 +4,10 @@ import html2canvas from "html2canvas";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../store";
 import toast from "react-hot-toast";
-
+import { Modal } from "antd";
+import { useState } from "react";
+import Avatar from "@mui/material/Avatar";
+import { Tooltip } from "@mui/material";
 function FunctionsMenu() {
   function exportDivToPDF(fileName: string) {
     const divId = "editor-content";
@@ -62,9 +65,70 @@ function FunctionsMenu() {
 
   const docTitle = useSelector((state: RootState) => state.doc.document.title);
 
+  const docAllCollaborators = useSelector(
+    (state: RootState) => state.doc.document.allCollaborators
+  );
+
+  const [showAllCollaborators, setShowAllCollaborators] = useState(false);
+
   return (
     <div className="functions-menu">
-      <div className="function-item">所有协同者</div>
+      <div
+        className="function-item"
+        onClick={() => {
+          console.log("open");
+          setShowAllCollaborators(true);
+        }}
+      >
+        所有协同者
+      </div>
+      <Modal
+        open={showAllCollaborators}
+        title="所有协同者"
+        width={400}
+        closable={true}
+        onCancel={() => {
+          console.log("close");
+          setShowAllCollaborators(false);
+        }}
+        footer={() => <></>}
+      >
+        <div className="show-all-collaborators-menu">
+          {docAllCollaborators.map((item) => {
+            return (
+              <Tooltip
+                key={item.id}
+                title={item.name}
+                arrow
+                slotProps={{
+                  popper: {
+                    modifiers: [
+                      {
+                        name: "offset",
+                        options: {
+                          offset: [0, -6],
+                        },
+                      },
+                    ],
+                  },
+                }}
+              >
+                <Avatar
+                  alt={item.name}
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    fontSize: "11px",
+                    backgroundColor: item.displayColor,
+                  }}
+                >
+                  {item.name.slice(0, 4)}
+                </Avatar>
+              </Tooltip>
+            );
+          })}
+        </div>
+      </Modal>
       <div
         className="function-item"
         onClick={() => {

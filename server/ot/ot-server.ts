@@ -158,6 +158,8 @@ const getInitialDocument = (config: OTServerConfig) => {
       },
     ],
     version: 1,
+    author: config.author,
+    allCollaborators: [config.author],
   };
 
   return initialDocument;
@@ -178,6 +180,7 @@ global.window = dom.window as unknown as Window & typeof globalThis;
 
 interface OTServerConfig {
   docId: string;
+  author: User;
 }
 export class OTServer {
   clients: Map<string, OTClient>; // 在线的客户端 socketId => OTClient
@@ -192,8 +195,15 @@ export class OTServer {
     this.slate.children = this.document.content;
   }
   clientConnect(socket: Socket, user: User) {
-    // todo: 这里改为socketId => AuthUser
     this.clients.set(socket.id, new OTClient(socket.id, user));
+    // 连接的客户端，记录到allCollaborators中
+    const allCollaborators = this.document.allCollaborators;
+    if (
+      user.id !== "unknown" &&
+      !allCollaborators.find((item) => item.id === user.id)
+    ) {
+      allCollaborators.push(user);
+    }
   }
   clientDisconnect(socket: Socket) {
     this.clients.delete(socket.id);

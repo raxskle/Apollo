@@ -79,14 +79,15 @@ io.on("connection", (socket) => {
   const docId = socket.handshake.auth.docId;
   const userId = socket.handshake.auth.userId;
   const user = UserMapping.get(userId) ?? {
-    id: "user1",
+    id: "unknown",
     name: "未知用户",
     displayColor: "grey",
   };
 
   if (!DocsMapping.has(docId)) {
-    console.log("otServer init!!");
-    DocsMapping.set(docId, new OTServer({ docId: docId }));
+    // 创建文档
+    console.log("doc otServer init!!");
+    DocsMapping.set(docId, new OTServer({ docId: docId, author: user }));
   }
   const otServer = DocsMapping.get(docId)!;
 

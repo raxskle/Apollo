@@ -18,6 +18,8 @@ export type Document = {
   createdTime: number;
   comments: Comment[];
   version: number; // 文档的版本号
+  author: User;
+  allCollaborators: Collaborator[];
 };
 
 export type User = {
@@ -53,6 +55,12 @@ const initialState: SystemState = {
     createdTime: 0,
     comments: [],
     version: 0,
+    author: {
+      id: "",
+      name: "User",
+      displayColor: "grey",
+    },
+    allCollaborators: [],
   },
   user: {
     id: "",
