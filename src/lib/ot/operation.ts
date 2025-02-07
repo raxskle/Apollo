@@ -283,7 +283,356 @@ export class Operation {
         // insert_text的后面sibling节点分割，无冲突
       }
     } else if (op1.type === "remove_text" && op2.type === "insert_text") {
-      //
+      if (arePathsEqual(op1.path, op2.path)) {
+        if (op1.offset <= op2.offset) {
+          // op1的位置在op2的前面
+          const newOffset = op2.offset - op1.text.length;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { offset: newOffset });
+          return [newOp1, newOp2];
+        } else {
+          // op1的位置在op2的后面
+          const newOffset = op1.offset + op2.text.length;
+
+          const newOp1 = copy(op1, { offset: newOffset });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
+      }
+    } else if (op1.type === "remove_text" && op2.type === "remove_text") {
+      if (arePathsEqual(op1.path, op2.path)) {
+        if (op1.offset <= op2.offset) {
+          // op2位置向前
+          const newOffset = op2.offset - op1.text.length;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { offset: newOffset });
+          return [newOp1, newOp2];
+        } else {
+          // op1位置向前
+          const newOffset = op1.offset - op2.text.length;
+
+          const newOp1 = copy(op1, { offset: newOffset });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
+      }
+    } else if (op1.type === "remove_text" && op2.type === "insert_node") {
+      if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+        const newPath = [...op1.path];
+        newPath[ancestor(newPath)]++;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+        const newPath = [...op1.path];
+        newPath[parent(newPath)]++;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
+        const newPath = [...op1.path];
+        newPath[sibling(newPath)]++;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      }
+    } else if (op1.type === "remove_text" && op2.type === "merge_node") {
+      if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+        const newPath = [...op1.path];
+        newPath[ancestor(newPath)]--;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+        // 父级节点合并
+        const newPath = [...op1.path];
+
+        if (op1.path[parent(op1.path)] === op2.path[sibling(op2.path)]) {
+          // 如果是该节点向前合并，子级节点要改变
+          newPath[sibling(newPath)] += op2.position;
+        }
+        newPath[parent(newPath)]--;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
+        // 子级节点合并，offset要改变
+        const newPath = [...op1.path];
+        newPath[sibling(newPath)]--;
+
+        let newOffset = op1.offset;
+        if (op1.path[sibling(op1.path)] === op2.path[sibling(op2.path)]) {
+          // op1该节点向前合并，offset要增加
+          newOffset += op2.position;
+        }
+
+        const newOp1 = copy(op1, { path: newPath, offset: newOffset });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      }
+    } else if (op1.type === "remove_text" && op2.type === "move_node") {
+      // todo 移动节点
+    } else if (op1.type === "remove_text" && op2.type === "remove_node") {
+      if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+        if (isAncestor(op1.path, op2.path)) {
+          // op1操作的祖先节点被删除了
+          const newOp1 = copy(op1, { type: "noop" });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else {
+          const newPath = [...op1.path];
+          newPath[ancestor(newPath)]--;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
+      } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+        if (isParent(op1.path, op2.path)) {
+          // op1操作的节点被删除了
+          const newOp1 = copy(op1, { type: "noop" });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else {
+          // 前面的节点被删除
+          const newPath = [...op1.path];
+          newPath[parent(newPath)]--;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
+      } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
+        if (arePathsEqual(op1.path, op2.path)) {
+          // op1操作的节点被删除了
+          const newOp1 = copy(op1, { type: "noop" });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else {
+          // 前面的子级节点被删除
+          const newPath = [...op1.path];
+          newPath[sibling(newPath)]--;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
+      }
+    } else if (op1.type === "remove_text" && op2.type === "set_node") {
+      // 看似无冲突
+    } else if (op1.type === "remove_text" && op2.type === "split_node") {
+      if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+        // 祖先节点分割，不存在祖先将父级分割到后面，所以只可能是前面的祖先
+        const newPath = [...op1.path];
+        newPath[ancestor(newPath)]++;
+
+        const newOp1 = copy(op1, { path: newPath });
+        const newOp2 = copy(op2);
+        return [newOp1, newOp2];
+      } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+        if (!isParent(op1.path, op2.path)) {
+          //  前面的父级节点分裂
+          const newPath = [...op1.path];
+          newPath[parent(newPath)]++;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else if (isParent(op1.path, op2.path)) {
+          // 该节点的父节点分裂
+          if (op2.position <= op1.path[sibling(op1.path)]) {
+            // 该节点的父节点向下分裂，且分裂位置在该节点之前，父节点+1，子节点-action.position
+            const newPath = [...op1.path];
+            newPath[parent(newPath)]++;
+            newPath[sibling(newPath)] -= op2.position;
+
+            const newOp1 = copy(op1, { path: newPath });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          }
+          // 否则不影响
+        }
+      } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
+        if (arePathsEqual(op1.path, op2.path)) {
+          // 该节点分裂
+          if (op1.offset >= op2.position) {
+            // 在该节点前分裂
+            const newPath = [...op1.path];
+            newPath[sibling(newPath)]++;
+
+            let newOffset = op1.offset;
+            newOffset -= op2.position;
+
+            const newOp1 = copy(op1, { path: newPath, offset: newOffset });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          } else {
+            // 在insert_text的offset后分割
+            // 这里逻辑和selection不同，split_node的position要移后
+            const newPosition = op2.position + op1.text.length;
+            const newOp1 = copy(op1);
+            const newOp2 = copy(op2, { position: newPosition });
+            return [newOp1, newOp2];
+          }
+        } else {
+          // 前面的节点分割
+          const newPath = [...op1.path];
+          newPath[sibling(newPath)]++;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
+        // insert_text的后面sibling节点分割，无冲突
+      }
+    }
+
+    {
+      if (op1.type === "insert_node" && op2.type === "insert_text") {
+        if (isBeforeAndSameAncestor(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[ancestor(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameParent(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[parent(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameSibling(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[sibling(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        }
+      } else if (op1.type === "insert_node" && op2.type === "remove_text") {
+        //
+      } else if (op1.type === "insert_node" && op2.type === "insert_node") {
+        //
+      } else if (op1.type === "insert_node" && op2.type === "merge_node") {
+        //
+      } else if (op1.type === "insert_node" && op2.type === "move_node") {
+        //
+      } else if (op1.type === "insert_node" && op2.type === "remove_node") {
+        //
+      } else if (op1.type === "insert_node" && op2.type === "set_node") {
+        //
+      } else if (op1.type === "insert_node" && op2.type === "split_node") {
+        //
+      }
+    }
+
+    {
+      if (op1.type === "merge_node" && op2.type === "insert_text") {
+        //
+      } else if (op1.type === "merge_node" && op2.type === "remove_text") {
+        //
+      } else if (op1.type === "merge_node" && op2.type === "insert_node") {
+        //
+      } else if (op1.type === "merge_node" && op2.type === "merge_node") {
+        //
+      } else if (op1.type === "merge_node" && op2.type === "move_node") {
+        //
+      } else if (op1.type === "merge_node" && op2.type === "remove_node") {
+        //
+      } else if (op1.type === "merge_node" && op2.type === "set_node") {
+        //
+      } else if (op1.type === "merge_node" && op2.type === "split_node") {
+        //
+      }
+    }
+
+    {
+      if (op1.type === "move_node" && op2.type === "insert_text") {
+        //
+      } else if (op1.type === "move_node" && op2.type === "remove_text") {
+        //
+      } else if (op1.type === "move_node" && op2.type === "insert_node") {
+        //
+      } else if (op1.type === "move_node" && op2.type === "merge_node") {
+        //
+      } else if (op1.type === "move_node" && op2.type === "move_node") {
+        //
+      } else if (op1.type === "move_node" && op2.type === "remove_node") {
+        //
+      } else if (op1.type === "move_node" && op2.type === "set_node") {
+        //
+      } else if (op1.type === "move_node" && op2.type === "split_node") {
+        //
+      }
+    }
+
+    {
+      if (op1.type === "remove_node" && op2.type === "insert_text") {
+        //
+      } else if (op1.type === "remove_node" && op2.type === "remove_text") {
+        //
+      } else if (op1.type === "remove_node" && op2.type === "insert_node") {
+        //
+      } else if (op1.type === "remove_node" && op2.type === "merge_node") {
+        //
+      } else if (op1.type === "remove_node" && op2.type === "move_node") {
+        //
+      } else if (op1.type === "remove_node" && op2.type === "remove_node") {
+        //
+      } else if (op1.type === "remove_node" && op2.type === "set_node") {
+        //
+      } else if (op1.type === "remove_node" && op2.type === "split_node") {
+        //
+      }
+    }
+
+    {
+      if (op1.type === "set_node" && op2.type === "insert_text") {
+        //
+      } else if (op1.type === "set_node" && op2.type === "remove_text") {
+        //
+      } else if (op1.type === "set_node" && op2.type === "insert_node") {
+        //
+      } else if (op1.type === "set_node" && op2.type === "merge_node") {
+        //
+      } else if (op1.type === "set_node" && op2.type === "move_node") {
+        //
+      } else if (op1.type === "set_node" && op2.type === "remove_node") {
+        //
+      } else if (op1.type === "set_node" && op2.type === "set_node") {
+        //
+      } else if (op1.type === "set_node" && op2.type === "split_node") {
+        //
+      }
+    }
+
+    {
+      if (op1.type === "split_node" && op2.type === "insert_text") {
+        //
+      } else if (op1.type === "split_node" && op2.type === "remove_text") {
+        //
+      } else if (op1.type === "split_node" && op2.type === "insert_node") {
+        //
+      } else if (op1.type === "split_node" && op2.type === "merge_node") {
+        //
+      } else if (op1.type === "split_node" && op2.type === "move_node") {
+        //
+      } else if (op1.type === "split_node" && op2.type === "remove_node") {
+        //
+      } else if (op1.type === "split_node" && op2.type === "set_node") {
+        //
+      } else if (op1.type === "split_node" && op2.type === "split_node") {
+        //
+      }
     }
 
     return [op1, op2];
