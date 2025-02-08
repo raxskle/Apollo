@@ -5,6 +5,7 @@
   justify-content: flex-start;
   align-items: center;
 
+  transition: width 0.2s ease;
   // width: 100%;
   flex-grow: 1;
   min-width: 200px;
@@ -25,9 +26,9 @@
     padding-left: 50px;
     padding-right: 50px;
     padding-bottom: 300px;
-    // width: 100%;
+
     flex-grow: 1;
-    max-width: 1000px;
+
     min-width: 200px;
     // font-family: " ";
     // font-family: "Times New Roman", serif;

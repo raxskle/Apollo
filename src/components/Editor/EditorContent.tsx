@@ -475,6 +475,8 @@ export function EditorContent() {
 
   const { showCommentBar } = useSelector((state: RootState) => state.view);
 
+  const fullWidth = useSelector((state: RootState) => state.view.fullWidth);
+
   // code
   const decorateCodeBlock = useDecorateCodeBlock(editor);
   const { decorateSearch } = useDecorateSearch();
@@ -498,9 +500,10 @@ export function EditorContent() {
         className={cx(
           "editor-content",
           css(`
-        > div[role="textbox"]{
-          font-family: ${docFontFamily}
-        }
+            > div[role="textbox"]{
+              max-width: ${fullWidth ? " " : "1000px"};
+              font-family: ${docFontFamily};
+            }
         `)
         )}
         id="editor-content"

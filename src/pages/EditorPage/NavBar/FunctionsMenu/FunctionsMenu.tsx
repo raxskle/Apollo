@@ -11,6 +11,7 @@ import { Tooltip } from "@mui/material";
 import { Switch } from "antd";
 import { changeDocumentFontFamily, DocFont } from "../../../../store/docSlice";
 import { getSocket } from "../../../../network";
+import { setFullWidth } from "../../../../store/viewSlice";
 function FunctionsMenu() {
   function exportDivToPDF(fileName: string) {
     const divId = "editor-content";
@@ -80,6 +81,8 @@ function FunctionsMenu() {
     (state: RootState) => state.doc.document.fontFamily
   );
   const isSerif = fontFamily === DocFont.Serif;
+
+  const fullWidth = useSelector((state: RootState) => state.view.fullWidth);
 
   return (
     <div className="functions-menu">
@@ -176,8 +179,9 @@ function FunctionsMenu() {
         适应屏幕宽度
         <Switch
           size="small"
+          value={fullWidth}
           onChange={(checked) => {
-            console.log(checked);
+            dispatch(setFullWidth(checked));
           }}
         />
       </div>
