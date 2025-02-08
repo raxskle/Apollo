@@ -9,6 +9,7 @@ import {
   isBeforeAndSameParent,
   isBeforeAndSameSibling,
   isParent,
+  isPrevious,
   parent,
   sibling,
 } from "./utils";
@@ -519,13 +520,93 @@ export class Operation {
           return [newOp1, newOp2];
         }
       } else if (op1.type === "insert_node" && op2.type === "remove_text") {
-        //
+        if (isBeforeAndSameAncestor(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[ancestor(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameParent(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[parent(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameSibling(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[sibling(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        }
       } else if (op1.type === "insert_node" && op2.type === "insert_node") {
-        //
+        // 在后面的操作要转换path+1，相同位置就op1在前，op2转换
+        if (isBeforeAndSameAncestor(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[ancestor(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+          const newPath = [...op1.path];
+          newPath[ancestor(newPath)]++;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameParent(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[parent(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+          const newPath = [...op1.path];
+          newPath[parent(newPath)]++;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameSibling(op2.path, op1.path)) {
+          const newPath = [...op2.path];
+          newPath[sibling(newPath)]++;
+
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2, { path: newPath });
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
+          const newPath = [...op1.path];
+          newPath[sibling(newPath)]++;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
       } else if (op1.type === "insert_node" && op2.type === "merge_node") {
-        //
+        // 如何分情况if-else
+        // 先判断op1和op2谁在前面，再判断层级和相对关系
+        if (isPrevious(op2.path, op1.path)) {
+          // op1在前
+        } else if (isPrevious(op1.path, op2.path)) {
+          // op2在前
+        } else if (isAncestor(op2.path, op1.path)) {
+          // op1是op2的祖先
+        } else if (isParent(op2.path, op1.path)) {
+          // op1是op2的父级
+        } else if (isAncestor(op1.path, op2.path)) {
+          // op1是op2的祖先
+        } else if (isParent(op1.path, op2.path)) {
+          // op1是op2的父级
+        } else if (arePathsEqual(op1.path, op2.path)) {
+          // 相同位置
+        }
       } else if (op1.type === "insert_node" && op2.type === "move_node") {
-        //
+        // todo 移动节点
       } else if (op1.type === "insert_node" && op2.type === "remove_node") {
         //
       } else if (op1.type === "insert_node" && op2.type === "set_node") {

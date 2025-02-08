@@ -143,6 +143,26 @@ export function ancestor(path: number[]): number {
   throw new Error("path length must be 3");
 }
 
+// b是否在a的严格前面，不分层级，不含相同路径和父子祖先关系
+export function isPrevious(pathA: number[], pathB: number[]) {
+  // a [2,2,4]
+  // b [2,2]   // false
+  // a [2,3]
+  // b [2,2,4] // true
+
+  for (let i = 0; i < pathA.length && i < pathB.length; i++) {
+    if (pathB[i] < pathA[i]) {
+      return true;
+    } else if (pathB[i] > pathA[i]) {
+      return false;
+    }
+    // 相同继续比较
+  }
+
+  // 相同或者包含关系
+  return false;
+}
+
 export const copy = (
   op: CustomOperation,
   options?: Record<string, unknown>
