@@ -10,6 +10,7 @@ import { Bold } from "../../../assets/icons/Bold";
 import { Menu } from "./Menu/Menu";
 import { Italic } from "../../../assets/icons/Italic";
 import { Underlined } from "../../../assets/icons/Underlined";
+import { CommentIcon } from "../../../assets/icons/Comment";
 import { Code } from "../../../assets/icons/Code";
 import { ToggleButton } from "./Menu/ToggleButton/ToggleButton";
 import { SelectButton } from "./Menu/SelectButton/SelectButton";
@@ -18,6 +19,9 @@ import { AlignType, CustomElement } from "../../../types/editor";
 import { AlignLeft } from "../../../assets/icons/AlignLeft";
 import { AlignCenter } from "../../../assets/icons/AlignCenter";
 import { AlignRight } from "../../../assets/icons/AlignRight";
+import { NormalButton } from "./Menu/NormalButton/NormalButton";
+import { useDispatch } from "react-redux";
+import { setInputCommentRef } from "../../../store/viewSlice";
 
 // 可以设置align的元素
 const isAlignElement = (
@@ -84,6 +88,16 @@ export const HoveringToolbar = () => {
   });
   const element =
     currentNode && Element.isElement(currentNode[0]) ? currentNode[0] : null;
+
+  const dispatch = useDispatch();
+
+  const handleCommentRef = () => {
+    if (editor.selection) {
+      // 获取选中的文本内容
+      const refText = Editor.string(editor, editor.selection);
+      dispatch(setInputCommentRef(refText));
+    }
+  };
 
   return (
     <Portal>
@@ -176,6 +190,19 @@ export const HoveringToolbar = () => {
             </ToggleButton>
           </>
         )}
+        <NormalButton onClick={handleCommentRef}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginLeft: "4px",
+              marginRight: "4px",
+            }}
+          >
+            <CommentIcon />
+            <div style={{ marginLeft: "4px", fontSize: "14px" }}>Comment</div>
+          </div>
+        </NormalButton>
       </Menu>
     </Portal>
   );
