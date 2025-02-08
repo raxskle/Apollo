@@ -3,7 +3,7 @@ import { CustomElement } from "../types/editor";
 import { Descendant } from "slate";
 
 export type Comment = {
-  ref?: CustomElement;
+  ref?: string;
   content: string;
   time: number;
   author: User;
@@ -101,6 +101,9 @@ const docSlice = createSlice({
     changeDocumentFontFamily: (state, action: PayloadAction<DocFont>) => {
       state.document.fontFamily = action.payload;
     },
+    updateComments: (state, action: PayloadAction<{ comments: Comment[] }>) => {
+      state.document.comments = action.payload.comments;
+    },
     changeDocumentContent: (
       state,
       action: PayloadAction<{ content: CustomElement[] | Descendant[] }>
@@ -128,6 +131,7 @@ export const {
   updateCollaborators,
   updateLastModified,
   changeDocumentFontFamily,
+  updateComments,
   init,
   setUser,
 } = docSlice.actions;

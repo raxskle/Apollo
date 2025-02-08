@@ -1,7 +1,7 @@
 // OT算法的服务端
 
 import { Socket } from "socket.io";
-import { DocFont, Document } from "../../src/store/docSlice";
+import { Comment, DocFont, Document } from "../../src/store/docSlice";
 import { Operation } from "../../src/lib/ot";
 import { Descendant, Editor, createEditor, withoutNormalizing } from "slate";
 import { withHistory } from "slate-history";
@@ -115,12 +115,7 @@ const getInitialDocument = (config: OTServerConfig) => {
     createdTime: serverStartTime,
     comments: [
       {
-        ref: {
-          type: "heading-one",
-          level: 1,
-          align: AlignType.Left,
-          children: [{ text: "This is editable heading-one!", italic: true }],
-        },
+        ref: "This is editable heading-one!",
         content: "this is a comment",
         author: {
           id: "001",
@@ -132,12 +127,7 @@ const getInitialDocument = (config: OTServerConfig) => {
         time: 1737896252231,
       },
       {
-        ref: {
-          type: "heading-three",
-          level: 3,
-          align: AlignType.Left,
-          children: [{ text: "This is editable heading-three!" }],
-        },
+        ref: "This is editable heading-two!",
         content: "this is a comment333333",
         author: {
           id: "001",
@@ -222,6 +212,10 @@ export class OTServer {
   setDocumentFontFamily(fontFamily: DocFont) {
     this.document.fontFamily = fontFamily;
     this.updateLastModified();
+  }
+  addComment(comment: Comment) {
+    this.document.comments.push(comment);
+    return this.document.comments;
   }
   getLastModified() {
     return this.document.lastModified;

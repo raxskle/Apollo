@@ -1,6 +1,7 @@
 import { Comment } from "../../../../store/docSlice";
 import "./CommentItem.scss";
 import { getRelativeTime } from "../../../../utils";
+import Avatar from "@mui/material/Avatar";
 
 type CommentItemProps = {
   comment: Comment;
@@ -11,12 +12,21 @@ export function CommentItem(props: CommentItemProps) {
 
   return (
     <div className="comment-bar-item">
-      <div className="comment-bar-item-ref">
-        {comment.ref?.children[0].text}
-      </div>
+      {comment.ref && <div className="comment-bar-item-ref">{comment.ref}</div>}
       <div className="comment-bar-item-card">
         <div className="comment-bar-item-info">
-          <div className="comment-bar-item-avator"></div>
+          <Avatar
+            alt={comment.author.name}
+            style={{
+              width: "24px",
+              height: "24px",
+              fontSize: "10px",
+              marginRight: "8px",
+              background: comment.author.displayColor,
+            }}
+          >
+            {comment.author.name.slice(0, 4)}
+          </Avatar>
           <div className="comment-bar-item-author">{comment.author.name}</div>
           <div className="comment-bar-item-date">
             {getRelativeTime(comment.time)}

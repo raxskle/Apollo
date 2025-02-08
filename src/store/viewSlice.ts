@@ -1,6 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-const initialState = { showCommentBar: false, search: "", fullWidth: false };
+const initialState = {
+  showCommentBar: false, // 是否显示评论栏
+  search: "", // 当前搜索文本
+  fullWidth: false, // 是否适应全屏显示
+  inputCommentRef: "this is a ref.", // 当前输入的评论引用
+};
 
 const viewSlice = createSlice({
   name: "root",
@@ -15,10 +20,17 @@ const viewSlice = createSlice({
     setFullWidth: (state, action: PayloadAction<boolean>) => {
       state.fullWidth = action.payload;
     },
+    setInputCommentRef: (state, action: PayloadAction<string>) => {
+      state.inputCommentRef = action.payload;
+    },
   },
 });
 
-export const { switchShowCommentBar, setSearch, setFullWidth } =
-  viewSlice.actions;
+export const {
+  switchShowCommentBar,
+  setSearch,
+  setFullWidth,
+  setInputCommentRef,
+} = viewSlice.actions;
 export default viewSlice.reducer;
 export type ViewState = ReturnType<typeof viewSlice.reducer>;

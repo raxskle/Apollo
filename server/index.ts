@@ -127,7 +127,7 @@ io.on("connection", (socket) => {
     }, 2000);
   });
 
-  //
+  // 修改文档标题
   socket.on("changeDocTitle", (msg) => {
     otServer.setDocumentTitle(msg);
     socket.broadcast.to(docId).emit("changeDocTitle", {
@@ -136,13 +136,19 @@ io.on("connection", (socket) => {
     });
   });
 
-  //
+  // 修改文档字体
   socket.on("changeDocFontFamily", (msg) => {
     otServer.setDocumentFontFamily(msg);
     socket.broadcast.to(docId).emit("changeDocFontFamily", {
       fontFamily: msg,
       lastModified: otServer.getLastModified(),
     });
+  });
+
+  // 增加评论
+  socket.on("sendComment", (comment) => {
+    const commentList = otServer.addComment(comment);
+    io.to(docId).emit("updateComment", commentList);
   });
 
   // 远端用户选择，广播给其他用户

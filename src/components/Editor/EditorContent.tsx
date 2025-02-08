@@ -35,6 +35,8 @@ import {
   updateLastModified,
   DocFont,
   changeDocumentFontFamily,
+  updateComments,
+  Comment,
 } from "../../store/docSlice";
 import { getClient, Operation } from "../../lib/ot";
 import { CommentBar } from "./CommentBar/CommentBar";
@@ -470,6 +472,20 @@ export function EditorContent() {
 
     return () => {
       socket.off("changeDocFontFamily", handleChangeDocFontFamily);
+    };
+  }, [dispatch]);
+
+  // 接收评论
+  useEffect(() => {
+    const handleUpdateComment = (commentList: Comment[]) => {
+      dispatch(updateComments({ comments: commentList }));
+    };
+
+    const socket = getSocket();
+    socket.on("updateComment", handleUpdateComment);
+
+    return () => {
+      socket.off("updateComment", handleUpdateComment);
     };
   }, [dispatch]);
 
