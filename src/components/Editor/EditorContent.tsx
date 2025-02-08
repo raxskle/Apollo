@@ -33,6 +33,8 @@ import {
   initDocument,
   changeDocumentTitle,
   updateLastModified,
+  DocFont,
+  changeDocumentFontFamily,
 } from "../../store/docSlice";
 import { getClient, Operation } from "../../lib/ot";
 import { CommentBar } from "./CommentBar/CommentBar";
@@ -48,6 +50,7 @@ import {
   SetNodeToDecorations,
 } from "./Elements/CodeBlockElement/decorateCode";
 import { useDecorateSearch } from "../../pages/EditorPage/NavBar/SearchBar/useDecorateSearch";
+import { css, cx } from "@emotion/css";
 
 // 文本leaf样式
 const Leaf = (props: RenderLeafProps) => {
@@ -427,6 +430,7 @@ export function EditorContent() {
     userId,
   ]);
 
+  // 修改标题
   useEffect(() => {
     const socket = getSocket();
     const handleChangeDocTitle = ({
@@ -443,6 +447,29 @@ export function EditorContent() {
 
     return () => {
       socket.off("changeDocTitle", handleChangeDocTitle);
+    };
+  }, [dispatch]);
+
+  // 修改字体
+  const docFontFamily = useSelector(
+    (state: RootState) => state.doc.document.fontFamily
+  );
+  useEffect(() => {
+    const socket = getSocket();
+    const handleChangeDocFontFamily = ({
+      fontFamily,
+      lastModified,
+    }: {
+      fontFamily: DocFont;
+      lastModified: number;
+    }) => {
+      dispatch(changeDocumentFontFamily(fontFamily));
+      dispatch(updateLastModified({ lastModified }));
+    };
+    socket.on("changeDocFontFamily", handleChangeDocFontFamily);
+
+    return () => {
+      socket.off("changeDocFontFamily", handleChangeDocFontFamily);
     };
   }, [dispatch]);
 
@@ -467,7 +494,17 @@ export function EditorContent() {
 
   return (
     <>
-      <div className="editor-content" id="editor-content">
+      <div
+        className={cx(
+          "editor-content",
+          css(`
+        > div[role="textbox"]{
+          font-family: ${docFontFamily}
+        }
+        `)
+        )}
+        id="editor-content"
+      >
         {document.content.length > 0 && (
           <>
             <Slate

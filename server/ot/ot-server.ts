@@ -1,7 +1,7 @@
 // OT算法的服务端
 
 import { Socket } from "socket.io";
-import { Document } from "../../src/store/docSlice";
+import { DocFont, Document } from "../../src/store/docSlice";
 import { Operation } from "../../src/lib/ot";
 import { Descendant, Editor, createEditor, withoutNormalizing } from "slate";
 import { withHistory } from "slate-history";
@@ -109,6 +109,7 @@ const getInitialDocument = (config: OTServerConfig) => {
   const initialDocument: Document = {
     id: config.docId ?? "0001",
     title: "新建文档",
+    fontFamily: DocFont.Default,
     content: initialContent,
     lastModified: serverStartTime,
     createdTime: serverStartTime,
@@ -216,6 +217,10 @@ export class OTServer {
   }
   setDocumentTitle(title: string) {
     this.document.title = title;
+    this.updateLastModified();
+  }
+  setDocumentFontFamily(fontFamily: DocFont) {
+    this.document.fontFamily = fontFamily;
     this.updateLastModified();
   }
   getLastModified() {

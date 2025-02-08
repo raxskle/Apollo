@@ -1,13 +1,16 @@
 import "./FunctionsMenu.scss";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store";
 import toast from "react-hot-toast";
 import { Modal } from "antd";
 import { useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import { Tooltip } from "@mui/material";
+import { Switch } from "antd";
+import { changeDocumentFontFamily, DocFont } from "../../../../store/docSlice";
+import { getSocket } from "../../../../network";
 function FunctionsMenu() {
   function exportDivToPDF(fileName: string) {
     const divId = "editor-content";
@@ -70,6 +73,13 @@ function FunctionsMenu() {
   );
 
   const [showAllCollaborators, setShowAllCollaborators] = useState(false);
+
+  const dispatch = useDispatch();
+
+  const fontFamily = useSelector(
+    (state: RootState) => state.doc.document.fontFamily
+  );
+  const isSerif = fontFamily === DocFont.Serif;
 
   return (
     <div className="functions-menu">
@@ -143,8 +153,34 @@ function FunctionsMenu() {
       </div>
 
       <div className="functions-menu-divider"></div>
-      <div className="function-item">设置字体</div>
-      <div className="function-item">设置封面图</div>
+      <div className="function-item">
+        衬线体/宋体
+        <Switch
+          size="small"
+          checked={isSerif}
+          onChange={(checked) => {
+            const socket = getSocket();
+            if (checked) {
+              // 设置为serif
+              socket.emit("changeDocFontFamily", DocFont.Serif);
+              dispatch(changeDocumentFontFamily(DocFont.Serif));
+            } else {
+              // 设置为default
+              socket.emit("changeDocFontFamily", DocFont.Default);
+              dispatch(changeDocumentFontFamily(DocFont.Default));
+            }
+          }}
+        />
+      </div>
+      <div className="function-item">
+        适应屏幕宽度
+        <Switch
+          size="small"
+          onChange={(checked) => {
+            console.log(checked);
+          }}
+        />
+      </div>
       <div className="functions-menu-divider"></div>
       <div
         className="function-item"

@@ -10,9 +10,15 @@ export type Comment = {
   id: string;
 };
 
+export enum DocFont {
+  Default = " ",
+  Serif = '"Times New Roman", serif',
+}
+
 export type Document = {
   id: string;
   title: string;
+  fontFamily: DocFont;
   content: CustomElement[] | Descendant[];
   lastModified: number;
   createdTime: number;
@@ -50,6 +56,7 @@ const initialState: SystemState = {
   document: {
     id: "0000",
     title: " ",
+    fontFamily: DocFont.Default,
     content: [],
     lastModified: 0,
     createdTime: 0,
@@ -91,6 +98,9 @@ const docSlice = createSlice({
       state.document.title = action.payload.title;
       state.document.lastModified = Date.now();
     },
+    changeDocumentFontFamily: (state, action: PayloadAction<DocFont>) => {
+      state.document.fontFamily = action.payload;
+    },
     changeDocumentContent: (
       state,
       action: PayloadAction<{ content: CustomElement[] | Descendant[] }>
@@ -117,6 +127,7 @@ export const {
   changeDocumentContent,
   updateCollaborators,
   updateLastModified,
+  changeDocumentFontFamily,
   init,
   setUser,
 } = docSlice.actions;

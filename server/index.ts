@@ -127,10 +127,20 @@ io.on("connection", (socket) => {
     }, 2000);
   });
 
+  //
   socket.on("changeDocTitle", (msg) => {
     otServer.setDocumentTitle(msg);
     socket.broadcast.to(docId).emit("changeDocTitle", {
       title: msg,
+      lastModified: otServer.getLastModified(),
+    });
+  });
+
+  //
+  socket.on("changeDocFontFamily", (msg) => {
+    otServer.setDocumentFontFamily(msg);
+    socket.broadcast.to(docId).emit("changeDocFontFamily", {
+      fontFamily: msg,
       lastModified: otServer.getLastModified(),
     });
   });
