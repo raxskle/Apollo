@@ -113,41 +113,7 @@ const getInitialDocument = (config: OTServerConfig) => {
     content: initialContent,
     lastModified: serverStartTime,
     createdTime: serverStartTime,
-    comments: [
-      {
-        ref: "This is editable heading-one!",
-        content: "this is a comment",
-        author: {
-          id: "001",
-          name: "raxssdas",
-
-          displayColor: "grey",
-        },
-        id: "comment001",
-        time: 1737896252231,
-      },
-      {
-        ref: "This is editable heading-two!",
-        content: "this is a comment333333",
-        author: {
-          id: "001",
-          name: "raxssdas",
-          displayColor: "grey",
-        },
-        id: "comment002",
-        time: 1737896252231,
-      },
-      {
-        content: "this is a comment333333",
-        author: {
-          id: "001",
-          name: "raxssdas",
-          displayColor: "grey",
-        },
-        id: "comment002",
-        time: 1737896252231,
-      },
-    ],
+    comments: [],
     version: 1,
     author: config.author,
     allCollaborators: [config.author],

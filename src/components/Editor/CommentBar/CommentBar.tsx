@@ -41,6 +41,10 @@ export function CommentBar() {
         author: currentUser,
         id: generateRandomString(12),
       });
+
+      // 清空
+      setInputCommentText("");
+      dispatch(setInputCommentRef(""));
     }
   };
 
@@ -60,13 +64,15 @@ export function CommentBar() {
       <div className="comment-bar-title">
         <div className="title-bar-content">
           <div className="title-bar-content-text">评论 Comments</div>
-          <BootstrapIconButton className="expand-icon">
+          <BootstrapIconButton
+            className="expand-icon"
+            onClick={handleSendComment}
+          >
             <img
               src={sendIcon}
               width="16px"
               height="16px"
               style={{ margin: "2px" }}
-              onClick={handleSendComment}
             />
           </BootstrapIconButton>
         </div>
