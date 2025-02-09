@@ -20,8 +20,12 @@ import { AlignLeft } from "../../../assets/icons/AlignLeft";
 import { AlignCenter } from "../../../assets/icons/AlignCenter";
 import { AlignRight } from "../../../assets/icons/AlignRight";
 import { NormalButton } from "./Menu/NormalButton/NormalButton";
-import { useDispatch } from "react-redux";
-import { setInputCommentRef } from "../../../store/viewSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setInputCommentRef,
+  switchShowCommentBar,
+} from "../../../store/viewSlice";
+import { RootState } from "../../../store";
 
 // 可以设置align的元素
 const isAlignElement = (
@@ -90,12 +94,18 @@ export const HoveringToolbar = () => {
     currentNode && Element.isElement(currentNode[0]) ? currentNode[0] : null;
 
   const dispatch = useDispatch();
+  const showCommentBar = useSelector(
+    (state: RootState) => state.view.showCommentBar
+  );
 
   const handleCommentRef = () => {
     if (editor.selection) {
       // 获取选中的文本内容
       const refText = Editor.string(editor, editor.selection);
       dispatch(setInputCommentRef(refText));
+      if (!showCommentBar) {
+        dispatch(switchShowCommentBar());
+      }
     }
   };
 
