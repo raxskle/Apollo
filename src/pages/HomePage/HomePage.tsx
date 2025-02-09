@@ -39,6 +39,10 @@ function HomePage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    window.document.title = "Apollo";
+  }, []);
+
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
 
@@ -49,7 +53,7 @@ function HomePage() {
     }
 
     const res = await loginOrRegister(userName, password);
-    console.log(">>>>>>>>>>>>>>>res", res);
+
     if (res.data) {
       dispatch(setUser(res.data));
       setOpen(false);
