@@ -65,7 +65,6 @@ export const useRemoteSelection = () => {
   };
 
   const transformSelection = (operations: CustomOperation[]) => {
-    // todo: 修改用户光标
     // console.log("transformSelection>>>>>>>", operations);
     const selections = cloneDeep(remoteSelections);
     Object.keys(remoteSelections).forEach((userId) => {

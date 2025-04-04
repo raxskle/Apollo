@@ -30,7 +30,6 @@ export class Operation {
 
   // operation是action数组，因为经过了操作堆积时compose
   transform(other: Operation): Array<Operation> {
-    // todo: transform转换
     // 由于状态机，transform时，只会有两个可能，要么一个op，要么一个op和buffer
     if (this.baseVersion !== other.baseVersion) {
       // transform基于相同版本
@@ -169,7 +168,7 @@ export class Operation {
         return [newOp1, newOp2];
       }
     } else if (op1.type === "insert_text" && op2.type === "move_node") {
-      // todo 移动节点
+      //
     } else if (op1.type === "insert_text" && op2.type === "remove_node") {
       if (isBeforeAndSameAncestor(op1.path, op2.path)) {
         if (isAncestor(op1.path, op2.path)) {
@@ -379,7 +378,7 @@ export class Operation {
         return [newOp1, newOp2];
       }
     } else if (op1.type === "remove_text" && op2.type === "move_node") {
-      // todo 移动节点
+      //
     } else if (op1.type === "remove_text" && op2.type === "remove_node") {
       if (isBeforeAndSameAncestor(op1.path, op2.path)) {
         if (isAncestor(op1.path, op2.path)) {
@@ -493,6 +492,152 @@ export class Operation {
         }
         // insert_text的后面sibling节点分割，无冲突
       }
+    } else if (op1.type === "move_node" && op2.type === "insert_text") {
+      //
+    } else if (op1.type === "move_node" && op2.type === "remove_text") {
+      //
+    } else if (op1.type === "move_node" && op2.type === "insert_node") {
+      //
+    } else if (op1.type === "move_node" && op2.type === "merge_node") {
+      //
+    } else if (op1.type === "move_node" && op2.type === "move_node") {
+      //
+    } else if (op1.type === "move_node" && op2.type === "remove_node") {
+      //
+    } else if (op1.type === "move_node" && op2.type === "set_node") {
+      //
+    } else if (op1.type === "move_node" && op2.type === "split_node") {
+      //
+    }
+
+    {
+      if (op1.type === "set_node" && op2.type === "insert_text") {
+        // 无冲突
+      } else if (op1.type === "set_node" && op2.type === "remove_text") {
+        // 无冲突
+      } else if (op1.type === "set_node" && op2.type === "insert_node") {
+        // 如果op2在前，op1 path要加
+        if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+          const newPath = [...op1.path];
+          newPath[ancestor(newPath)]++;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+          const newPath = [...op1.path];
+          newPath[parent(newPath)]++;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
+          const newPath = [...op1.path];
+          newPath[sibling(newPath)]++;
+
+          const newOp1 = copy(op1, { path: newPath });
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        }
+      } else if (op1.type === "set_node" && op2.type === "merge_node") {
+        // todo
+        // merge_node对于某节点来说的影响，op1要转换，op2不用转换
+        if (isPrevious(op2.path, op1.path)) {
+          // op1在前
+          // 如果op2合并到op1的节点，那么op1也不用变，直接set整个节点
+          // 如果op2是父级或者祖先，合并之后会到op1的后面，不用管
+          // 如果是同级，合并后成为同一个节点，不用管
+          const newOp1 = copy(op1);
+          const newOp2 = copy(op2);
+          return [newOp1, newOp2];
+        } else if (isPrevious(op1.path, op2.path)) {
+          // op2在前
+          if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+            // op2 是前面的祖先
+            const newPath = [...op1.path];
+            newPath[ancestor(newPath)]++;
+
+            const newOp1 = copy(op1, { path: newPath });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+            // op2 是前面的父级
+            const newPath = [...op1.path];
+            newPath[parent(newPath)]++;
+
+            const newOp1 = copy(op1, { path: newPath });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
+            // op2 是前面的节点
+            const newPath = [...op1.path];
+            newPath[sibling(newPath)]++;
+
+            const newOp1 = copy(op1, { path: newPath });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          }
+        } else if (isAncestor(op2.path, op1.path)) {
+          // op1是op2的祖先
+          // 祖先set_node，
+        } else if (isParent(op2.path, op1.path)) {
+          // op1是op2的父级
+        } else if (isAncestor(op1.path, op2.path)) {
+          // op1是op2的祖先
+        } else if (isParent(op1.path, op2.path)) {
+          // op1是op2的父级
+        } else if (arePathsEqual(op1.path, op2.path)) {
+          // 相同位置
+        }
+      } else if (op1.type === "set_node" && op2.type === "move_node") {
+        //
+      } else if (op1.type === "set_node" && op2.type === "remove_node") {
+        // 如果op2在前，op1 path要减，如果节点包含，则被删除
+        if (isBeforeAndSameAncestor(op1.path, op2.path)) {
+          if (isAncestor(op1.path, op2.path)) {
+            const newOp1 = copy(op1, { type: "noop" });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          } else {
+            const newPath = [...op1.path];
+            newPath[ancestor(newPath)]--;
+
+            const newOp1 = copy(op1, { path: newPath });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          }
+        } else if (isBeforeAndSameParent(op1.path, op2.path)) {
+          if (isParent(op1.path, op2.path)) {
+            const newOp1 = copy(op1, { type: "noop" });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          } else {
+            const newPath = [...op1.path];
+            newPath[parent(newPath)]--;
+
+            const newOp1 = copy(op1, { path: newPath });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          }
+        } else if (isBeforeAndSameSibling(op1.path, op2.path)) {
+          if (arePathsEqual(op1.path, op2.path)) {
+            const newOp1 = copy(op1, { type: "noop" });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          } else {
+            const newPath = [...op1.path];
+            newPath[sibling(newPath)]++;
+
+            const newOp1 = copy(op1, { path: newPath });
+            const newOp2 = copy(op2);
+            return [newOp1, newOp2];
+          }
+        }
+      } else if (op1.type === "set_node" && op2.type === "set_node") {
+        // 无冲突
+      } else if (op1.type === "set_node" && op2.type === "split_node") {
+        // todo 如果插入在前，op1 path要加
+      }
     }
 
     {
@@ -588,6 +733,7 @@ export class Operation {
           return [newOp1, newOp2];
         }
       } else if (op1.type === "insert_node" && op2.type === "merge_node") {
+        // todo
         // 如何分情况if-else
         // 先判断op1和op2谁在前面，再判断层级和相对关系
         if (isPrevious(op2.path, op1.path)) {
@@ -606,113 +752,73 @@ export class Operation {
           // 相同位置
         }
       } else if (op1.type === "insert_node" && op2.type === "move_node") {
-        // todo 移动节点
+        //
       } else if (op1.type === "insert_node" && op2.type === "remove_node") {
-        //
+        // todo
       } else if (op1.type === "insert_node" && op2.type === "set_node") {
-        //
+        // todo
       } else if (op1.type === "insert_node" && op2.type === "split_node") {
-        //
+        // todo
       }
     }
 
     {
       if (op1.type === "merge_node" && op2.type === "insert_text") {
-        //
+        // todo
       } else if (op1.type === "merge_node" && op2.type === "remove_text") {
-        //
+        // todo
       } else if (op1.type === "merge_node" && op2.type === "insert_node") {
-        //
+        // todo
       } else if (op1.type === "merge_node" && op2.type === "merge_node") {
-        //
+        // todo
       } else if (op1.type === "merge_node" && op2.type === "move_node") {
         //
       } else if (op1.type === "merge_node" && op2.type === "remove_node") {
-        //
+        // todo
       } else if (op1.type === "merge_node" && op2.type === "set_node") {
-        //
+        // todo
       } else if (op1.type === "merge_node" && op2.type === "split_node") {
-        //
-      }
-    }
-
-    {
-      if (op1.type === "move_node" && op2.type === "insert_text") {
-        //
-      } else if (op1.type === "move_node" && op2.type === "remove_text") {
-        //
-      } else if (op1.type === "move_node" && op2.type === "insert_node") {
-        //
-      } else if (op1.type === "move_node" && op2.type === "merge_node") {
-        //
-      } else if (op1.type === "move_node" && op2.type === "move_node") {
-        //
-      } else if (op1.type === "move_node" && op2.type === "remove_node") {
-        //
-      } else if (op1.type === "move_node" && op2.type === "set_node") {
-        //
-      } else if (op1.type === "move_node" && op2.type === "split_node") {
-        //
+        // todo
       }
     }
 
     {
       if (op1.type === "remove_node" && op2.type === "insert_text") {
-        //
+        // todo
       } else if (op1.type === "remove_node" && op2.type === "remove_text") {
-        //
+        // todo
       } else if (op1.type === "remove_node" && op2.type === "insert_node") {
-        //
+        // todo
       } else if (op1.type === "remove_node" && op2.type === "merge_node") {
-        //
+        // todo
       } else if (op1.type === "remove_node" && op2.type === "move_node") {
         //
       } else if (op1.type === "remove_node" && op2.type === "remove_node") {
-        //
+        // todo
       } else if (op1.type === "remove_node" && op2.type === "set_node") {
-        //
+        // todo
       } else if (op1.type === "remove_node" && op2.type === "split_node") {
-        //
-      }
-    }
-
-    {
-      if (op1.type === "set_node" && op2.type === "insert_text") {
-        //
-      } else if (op1.type === "set_node" && op2.type === "remove_text") {
-        //
-      } else if (op1.type === "set_node" && op2.type === "insert_node") {
-        //
-      } else if (op1.type === "set_node" && op2.type === "merge_node") {
-        //
-      } else if (op1.type === "set_node" && op2.type === "move_node") {
-        //
-      } else if (op1.type === "set_node" && op2.type === "remove_node") {
-        //
-      } else if (op1.type === "set_node" && op2.type === "set_node") {
-        //
-      } else if (op1.type === "set_node" && op2.type === "split_node") {
-        //
+        // todo
       }
     }
 
     {
       if (op1.type === "split_node" && op2.type === "insert_text") {
-        //
+        // todo
       } else if (op1.type === "split_node" && op2.type === "remove_text") {
-        //
+        // todo
       } else if (op1.type === "split_node" && op2.type === "insert_node") {
-        //
+        // todo
       } else if (op1.type === "split_node" && op2.type === "merge_node") {
-        //
+        // todo
       } else if (op1.type === "split_node" && op2.type === "move_node") {
         //
       } else if (op1.type === "split_node" && op2.type === "remove_node") {
-        //
+        // todo
       } else if (op1.type === "split_node" && op2.type === "set_node") {
-        //
+        // todo
       } else if (op1.type === "split_node" && op2.type === "split_node") {
-        //
+        // todo
       }
     }
 
